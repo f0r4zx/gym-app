@@ -96,8 +96,9 @@ fun AppRoot(repo: GymRepository) {
             value = LocalDate.now()
         }
     }
-    if (!state.settings.onboardingDone || state.profile == null) {
-        OnboardingScreen(today = today) { profile ->
+    if (!state.settings.onboardingDone || state.profile == null || state.settings.editProfile) {
+        if (state.settings.editProfile) BackHandler { repo.update { Actions.cancelProfileEdit(it) } }
+        OnboardingScreen(today = today, initial = if (state.settings.editProfile) state.profile else null) { profile ->
             repo.update { Actions.completeOnboarding(it, profile, today) }
         }
     } else {

@@ -38,13 +38,17 @@ object Actions {
     // ---- Onboarding ----------------------------------------------------------------------
 
     fun completeOnboarding(state: AppState, profile: ProfileDto, today: LocalDate): AppState {
-        val withProfile = state.copy(
+        val key = today.toEpochDay()
+        return state.copy(
             profile = profile,
-            settings = state.settings.copy(onboardingDone = true),
-            weights = state.weights + WeightDto(today.toEpochDay(), profile.weightKg),
+            settings = state.settings.copy(onboardingDone = true, editProfile = false),
+            weights = (state.weights.filter { it.epochDay != key } + WeightDto(key, profile.weightKg)).sortedBy { it.epochDay },
         )
-        return withProfile
     }
+
+    fun startProfileEdit(state: AppState): AppState = state.copy(settings = state.settings.copy(editProfile = true))
+
+    fun cancelProfileEdit(state: AppState): AppState = state.copy(settings = state.settings.copy(editProfile = false))
 
     // ---- Experience, levels and achievements ------------------------------------------------
 

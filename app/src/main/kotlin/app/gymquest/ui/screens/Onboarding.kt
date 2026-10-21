@@ -53,27 +53,27 @@ import kotlin.math.roundToInt
 private const val STEPS = 7
 
 @Composable
-fun OnboardingScreen(today: LocalDate, onDone: (ProfileDto) -> Unit) {
+fun OnboardingScreen(today: LocalDate, initial: ProfileDto? = null, onDone: (ProfileDto) -> Unit) {
     var step by rememberSaveable { mutableIntStateOf(0) }
-    var name by rememberSaveable { mutableStateOf("") }
-    var age by rememberSaveable { mutableStateOf("") }
-    var sex by rememberSaveable { mutableStateOf(Sex.OTHER.name) }
-    var height by rememberSaveable { mutableStateOf("") }
-    var weight by rememberSaveable { mutableStateOf("") }
-    var target by rememberSaveable { mutableStateOf("") }
-    var goal by rememberSaveable { mutableStateOf(Goal.GENERAL_HEALTH.name) }
-    var activity by rememberSaveable { mutableStateOf(ActivityLevel.LIGHT.name) }
-    var experience by rememberSaveable { mutableStateOf(Experience.BEGINNER.name) }
-    var days by rememberSaveable { mutableIntStateOf(3) }
-    var equipment by rememberSaveable { mutableStateOf(Equipment.BODYWEIGHT.name) }
-    var diet by rememberSaveable { mutableStateOf(DietStyle.OMNIVORE.name) }
-    var gluten by rememberSaveable { mutableStateOf(false) }
-    var lactose by rememberSaveable { mutableStateOf(false) }
-    var nuts by rememberSaveable { mutableStateOf(false) }
-    var skin by rememberSaveable { mutableStateOf(SkinType.NORMAL.name) }
-    var acne by rememberSaveable { mutableStateOf(false) }
-    var wake by rememberSaveable { mutableIntStateOf(7) }
-    var sleep by rememberSaveable { mutableIntStateOf(23) }
+    var name by rememberSaveable { mutableStateOf(initial?.name ?: "") }
+    var age by rememberSaveable { mutableStateOf(initial?.let { java.time.Period.between(LocalDate.ofEpochDay(it.birthEpochDay), today).years.toString() } ?: "") }
+    var sex by rememberSaveable { mutableStateOf(initial?.sex ?: Sex.OTHER.name) }
+    var height by rememberSaveable { mutableStateOf(initial?.heightCm?.let { "%.0f".format(it) } ?: "") }
+    var weight by rememberSaveable { mutableStateOf(initial?.weightKg?.let { "%.1f".format(it) } ?: "") }
+    var target by rememberSaveable { mutableStateOf(initial?.targetWeightKg?.let { "%.1f".format(it) } ?: "") }
+    var goal by rememberSaveable { mutableStateOf(initial?.goal ?: Goal.GENERAL_HEALTH.name) }
+    var activity by rememberSaveable { mutableStateOf(initial?.activity ?: ActivityLevel.LIGHT.name) }
+    var experience by rememberSaveable { mutableStateOf(initial?.experience ?: Experience.BEGINNER.name) }
+    var days by rememberSaveable { mutableIntStateOf(initial?.daysPerWeek ?: 3) }
+    var equipment by rememberSaveable { mutableStateOf(initial?.equipment?.joinToString(",") ?: Equipment.BODYWEIGHT.name) }
+    var diet by rememberSaveable { mutableStateOf(initial?.dietStyle ?: DietStyle.OMNIVORE.name) }
+    var gluten by rememberSaveable { mutableStateOf(initial?.glutenFree ?: false) }
+    var lactose by rememberSaveable { mutableStateOf(initial?.lactoseFree ?: false) }
+    var nuts by rememberSaveable { mutableStateOf(initial?.noNuts ?: false) }
+    var skin by rememberSaveable { mutableStateOf(initial?.skinType ?: SkinType.NORMAL.name) }
+    var acne by rememberSaveable { mutableStateOf(initial?.acneProne ?: false) }
+    var wake by rememberSaveable { mutableIntStateOf(initial?.wakeHour ?: 7) }
+    var sleep by rememberSaveable { mutableIntStateOf(initial?.sleepHour ?: 23) }
 
     val ageN = age.toIntOrNull()
     val heightN = height.toDoubleOrNull()
@@ -113,7 +113,7 @@ fun OnboardingScreen(today: LocalDate, onDone: (ProfileDto) -> Unit) {
         ) {
             when (step) {
                 0 -> {
-                    Title("¡Bienvenido a GymQuest!", "Convierte cada repetición, cada paso y cada vaso de agua en experiencia. Cuéntame de ti para armar tu plan.")
+                    if (initial == null) Title("¡Bienvenido a GymQuest!", "Convierte cada repetición, cada paso y cada vaso de agua en experiencia. Cuéntame de ti para armar tu plan.") else Title("Editar mi perfil", "Cambia lo que necesites; se recalculan tus calorías, agua y recomendaciones.")
                     OutlinedTextField(name, { name = it.take(24) }, label = { Text("Tu nombre o apodo") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     NumberField(age, { age = it }, "Edad", suffix = "años", decimals = false, modifier = Modifier.fillMaxWidth())
                     Text("Sexo (para calcular tu metabolismo)", fontWeight = FontWeight.SemiBold)
@@ -181,7 +181,7 @@ fun OnboardingScreen(today: LocalDate, onDone: (ProfileDto) -> Unit) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             if (step > 0) OutlinedButton(onClick = { step-- }, modifier = Modifier.height(50.dp)) { Text("Atrás") }
             PrimaryButton(
-                text = if (step == STEPS - 1) "¡Empezar mi aventura!" else "Siguiente",
+                text = if (step == STEPS - 1) (if (initial == null) "¡Empezar mi aventura!" else "Guardar cambios") else "Siguiente",
                 onClick = { if (step == STEPS - 1) onDone(build()) else step++ },
                 enabled = valid,
                 modifier = Modifier.weight(1f),

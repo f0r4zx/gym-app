@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.gymquest.core.notifications.NotificationType
+import app.gymquest.data.Actions
 import app.gymquest.data.AppState
 import app.gymquest.ui.Controller
 import app.gymquest.ui.components.ChoiceChips
@@ -39,6 +40,12 @@ fun SettingsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         BackHeader("Ajustes", onBack)
+
+        SectionTitle("Mi perfil")
+        GqCard(onClick = { c.change { Actions.startProfileEdit(it) } }) {
+            Text("✏️ Editar mis datos y mi objetivo", fontWeight = FontWeight.Bold)
+            Muted("Edad, estatura, peso, objetivo, equipo, dieta, piel y horario de sueño.")
+        }
 
         SectionTitle("Entrenamiento con cámara")
         GqCard {
