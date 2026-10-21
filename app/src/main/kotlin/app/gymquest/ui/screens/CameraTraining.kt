@@ -67,7 +67,7 @@ import app.gymquest.ui.theme.Mint
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.max
+import kotlin.math.min
 
 /** The live camera screen: preview, skeleton, counter and boss fight. */
 @Composable
@@ -78,7 +78,7 @@ fun CameraTraining(engine: TrainingEngine, settings: SettingsDto, onStop: () -> 
     val front = settings.useFrontCamera
 
     val previewView = remember {
-        PreviewView(context).apply { scaleType = PreviewView.ScaleType.FILL_CENTER }
+        PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER }
     }
     val pacer = remember { FramePacer(QualityProfile.BALANCED.analysisFps) }
     val quality = remember { AdaptiveQuality() }
@@ -175,7 +175,8 @@ private fun SkeletonOverlay(engine: TrainingEngine) {
         // Reading the pose here (draw phase) redraws only this canvas for each new frame.
         val frame = engine.pose ?: return@Canvas
         val aspect = frame.aspect.toFloat()
-        val scale = max(size.width / aspect, size.height)
+        // The preview shows the whole picture (letterboxed), so the skeleton uses the same fit.
+        val scale = min(size.width / aspect, size.height)
         val w = aspect * scale
         val h = scale
         val ox = (size.width - w) / 2f
