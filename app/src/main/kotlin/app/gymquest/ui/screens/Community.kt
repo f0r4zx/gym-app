@@ -142,7 +142,7 @@ fun CommunityScreen(state: AppState, c: Controller) {
                 features.forEach { f ->
                     val a = FeatureGate.check(f, online)
                     Text("• ${f.label}${if (!a.enabled) " — no disponible ahora" else ""}", style = MaterialTheme.typography.bodyMedium)
-                    if (!online && a.limited && a.message != null) Muted(a.message)
+                    a.message?.let { note -> if (!online && a.limited) Muted(note) }
                 }
             }
         }
