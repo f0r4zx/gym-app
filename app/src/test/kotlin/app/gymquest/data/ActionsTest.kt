@@ -151,4 +151,29 @@ class ActionsTest {
         assertEquals(60.5, s.profile!!.weightKg, 0.001)
         assertEquals(1, s.weights.count { it.epochDay == today.toEpochDay() })
     }
+
+    @Test
+    fun weeklyChallengesProgressWithTrainingAndCanBeClaimed() {
+        val s0 = started()
+        val weekly = Derived.weeklyBoard(s0, today)
+        assertTrue(weekly.missions.isNotEmpty())
+
+        // Beating bosses and finishing workouts advance the weekly goals.
+        var s = s0
+        repeat(3) { i ->
+            s = Actions.finishSet(
+                s, ExerciseType.SQUAT, 20, 0.9, 60_000, 1_000L + i, today,
+                bossId = "slime_squat", victory = true, flawless = false,
+            ).state
+        }
+        val after = Derived.weeklyBoard(s, today)
+        assertTrue(after.missions.any { it.progress > 0 })
+
+        val done = after.missions.first()
+        val ready = s.copy(game = s.game.copy(weekProgress = s.game.weekProgress + (done.mission.id to done.mission.target.toDouble())))
+        val first = Actions.claimWeekly(ready, done.mission.id, today)
+        assertTrue(first.reward.xp > 0)
+        val again = Actions.claimWeekly(first.state, done.mission.id, today)
+        assertEquals(first.state.game.xp, again.state.game.xp)
+    }
 }

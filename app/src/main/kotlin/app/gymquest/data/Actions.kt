@@ -91,12 +91,16 @@ object Actions {
 
     fun withMissionEvent(state: AppState, event: GameEvent, today: LocalDate): AppState {
         val board = Derived.missionBoard(state, today).apply(event)
+        val week = Derived.weeklyBoard(state, today).apply(event)
         return state.copy(
             game = state.game.copy(
                 missionDay = today.toString(),
                 missionProgress = board.missions.associate { it.mission.id to it.progress },
                 missionClaimed = board.missions.filter { it.claimed }.map { it.mission.id }.toSet(),
                 missionBonusClaimed = board.bonusClaimed,
+                weekKey = week.periodKey,
+                weekProgress = week.missions.associate { it.mission.id to it.progress },
+                weekClaimed = week.missions.filter { it.claimed }.map { it.mission.id }.toSet(),
             ),
         )
     }
@@ -298,6 +302,20 @@ object Actions {
                 missionDay = today.toString(),
                 missionProgress = after.missions.associate { it.mission.id to it.progress },
                 missionClaimed = after.missions.filter { it.claimed }.map { it.mission.id }.toSet(),
+            ),
+        )
+        return grantXp(s, reward.xp, today, coins = reward.coins.toLong())
+    }
+
+    fun claimWeekly(state: AppState, missionId: String, today: LocalDate): Result {
+        val board = Derived.weeklyBoard(state, today)
+        val (after, reward) = board.claim(missionId, 1.0)
+        if (reward == null) return Result(state)
+        val s = state.copy(
+            game = state.game.copy(
+                weekKey = after.periodKey,
+                weekProgress = after.missions.associate { it.mission.id to it.progress },
+                weekClaimed = after.missions.filter { it.claimed }.map { it.mission.id }.toSet(),
             ),
         )
         return grantXp(s, reward.xp, today, coins = reward.coins.toLong())

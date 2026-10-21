@@ -70,6 +70,27 @@ fun MissionsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             }
         }
 
+        val weekly = Derived.weeklyBoard(state, c.today)
+        Text("Retos de la semana", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+        weekly.missions.forEach { p ->
+            GqCard(container = if (p.claimed) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Pill(p.mission.category.label)
+                    Text("+${p.mission.xp} XP  ·  +${p.mission.coins} 🪙", style = MaterialTheme.typography.labelMedium)
+                }
+                Text(p.mission.title, fontWeight = FontWeight.Bold)
+                Bar(p.fraction, color = if (p.complete) Mint else MaterialTheme.colorScheme.tertiary)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Muted("${formatProgress(p.progress)} / ${p.mission.target}")
+                    when {
+                        p.claimed -> Text("✅ Reclamado")
+                        p.complete -> PrimaryButton("Reclamar", { c.act { Actions.claimWeekly(it, p.mission.id, c.today) } })
+                        else -> Unit
+                    }
+                }
+            }
+        }
+
         if (board.allComplete) {
             GqCard(container = Gold.copy(alpha = 0.18f)) {
                 Text("🎉 ¡Completaste todo el día!", fontWeight = FontWeight.Bold)

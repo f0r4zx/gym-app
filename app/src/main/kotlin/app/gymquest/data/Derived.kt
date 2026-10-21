@@ -112,6 +112,15 @@ object Derived {
         )
     }
 
+    fun weeklyBoard(state: AppState, today: LocalDate): MissionBoard {
+        val base = MissionBoard.weekly(today, missionContext(state, today))
+        val g = state.game
+        val sameWeek = g.weekKey == base.periodKey
+        val progress = if (sameWeek) g.weekProgress else emptyMap()
+        val claimed = if (sameWeek) g.weekClaimed else emptySet()
+        return MissionBoard(base.periodKey, base.missions.map { MissionProgress(it.mission, progress[it.mission.id] ?: 0.0, it.mission.id in claimed) })
+    }
+
     fun newAchievements(state: AppState, today: LocalDate) =
         Achievements.newlyUnlocked(playerStats(state, today), state.game.achievements)
 }
