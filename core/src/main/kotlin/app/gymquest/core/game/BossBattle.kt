@@ -37,8 +37,10 @@ sealed interface BattleEvent {
 class BossBattle(
     val boss: Boss,
     private val startMs: Long = 0,
-    val playerMaxHp: Int = PLAYER_HP,
+    private val modifiers: app.gymquest.core.avatar.BattleModifiers = app.gymquest.core.avatar.BattleModifiers.NONE,
 ) {
+    val playerMaxHp: Int = modifiers.playerMaxHp
+
     var state = BattleState.IN_PROGRESS
         private set
     var bossHp = boss.maxHp
@@ -96,7 +98,7 @@ class BossBattle(
 
         val base = if (event.isHoldTick) HOLD_DAMAGE else BASE_DAMAGE
         val comboMultiplier = 1.0 + 0.1 * minOf(combo, MAX_COMBO_STACK)
-        var damage = base * event.quality * comboMultiplier * variety
+        var damage = base * event.quality * comboMultiplier * variety * modifiers.damageMultiplier
         if (critical) damage *= CRIT_MULTIPLIER
         val dealt = damage.roundToInt().coerceAtLeast(1)
 
@@ -147,8 +149,10 @@ class BossBattle(
         return out
     }
 
-    private fun attackInterval(): Long =
-        if (enraged) (boss.attackIntervalMs * ENRAGE_SPEED).toLong() else boss.attackIntervalMs
+    private fun attackInterval(): Long {
+        val base = (boss.attackIntervalMs * modifiers.bossIntervalMultiplier).toLong()
+        return if (enraged) (base * ENRAGE_SPEED).toLong() else base
+    }
 
     companion object {
         const val PLAYER_HP = 100
