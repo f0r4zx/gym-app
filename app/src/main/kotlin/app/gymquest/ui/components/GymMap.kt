@@ -170,11 +170,12 @@ fun GymMap(
     LaunchedEffect(style, routeVersion, destination, reports) {
         val st = style ?: return@LaunchedEffect
         st.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)?.setGeoJson(
-            if (route.size >= 2) Feature.fromGeometry(LineString.fromLngLats(route.map { Point.fromLngLat(it.lon, it.lat) }))
-            else FeatureCollection.fromFeatures(emptyList<Feature>()),
+            FeatureCollection.fromFeatures(
+                if (route.size >= 2) listOf(Feature.fromGeometry(LineString.fromLngLats(route.map { Point.fromLngLat(it.lon, it.lat) }))) else emptyList(),
+            ),
         )
         st.getSourceAs<GeoJsonSource>(DEST_SOURCE)?.setGeoJson(
-            destination?.let { Feature.fromGeometry(Point.fromLngLat(it.lon, it.lat)) } ?: FeatureCollection.fromFeatures(emptyList<Feature>()),
+            FeatureCollection.fromFeatures(destination?.let { listOf(Feature.fromGeometry(Point.fromLngLat(it.lon, it.lat))) } ?: emptyList()),
         )
         st.getSourceAs<GeoJsonSource>(REPORTS_SOURCE)?.setGeoJson(
             FeatureCollection.fromFeatures(reports.map { Feature.fromGeometry(Point.fromLngLat(it.lon, it.lat)) }),

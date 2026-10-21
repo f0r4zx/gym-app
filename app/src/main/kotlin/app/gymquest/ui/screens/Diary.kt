@@ -107,7 +107,7 @@ fun DiaryScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                                 .clickable(enabled = cell.date != null) { selected = cell.date.toString() },
                             contentAlignment = Alignment.Center,
                         ) {
-                            if (cell.date != null) Text(if (cell.inStreak) "🔥" else cell.date.dayOfMonth.toString(), fontSize = 13.sp)
+                            cell.date?.let { d -> Text(if (cell.inStreak) "🔥" else d.dayOfMonth.toString(), fontSize = 13.sp) }
                         }
                     }
                     repeat(7 - week.size) { Box(Modifier.weight(1f)) }
