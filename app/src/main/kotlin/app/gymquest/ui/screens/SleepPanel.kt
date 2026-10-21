@@ -63,6 +63,8 @@ internal fun SleepPanel(state: AppState, c: Controller) {
         Muted("Recomendado para ${age} años. Si entrenas fuerte, necesitas un poco más.")
     }
 
+    SleepSources(state, c)
+
     if (last != null) {
         val score = SleepScore.score(last, need)
         val workouts = state.workouts.filter { it.timeMs >= last.endMs }.map { WorkoutLoad(it.timeMs, (it.durationMs / 60_000).toInt(), 5.0) }
