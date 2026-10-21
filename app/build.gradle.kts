@@ -18,7 +18,10 @@ android {
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Phones only: keeps the APK much smaller than shipping x86 emulator libraries too.
-        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+        // -PphoneOnly drops the x86 emulator libraries (used for the APK you install on a phone).
+        ndk {
+            abiFilters += if (project.hasProperty("phoneOnly")) listOf("arm64-v8a", "armeabi-v7a") else listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
     }
 
     buildTypes {
