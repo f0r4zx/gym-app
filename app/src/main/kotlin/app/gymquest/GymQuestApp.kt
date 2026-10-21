@@ -2,6 +2,7 @@ package app.gymquest
 
 import android.app.Application
 import app.gymquest.data.GymRepository
+import app.gymquest.music.MusicModel
 import app.gymquest.notify.Notifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +13,8 @@ class GymQuestApp : Application() {
 
     /** Created on first use so the app starts drawing before the saved file is read. */
     val repo: GymRepository by lazy { GymRepository(this, appScope) }
+
+    val music: MusicModel by lazy { MusicModel(this, appScope) }
 
     override fun onCreate() {
         super.onCreate()

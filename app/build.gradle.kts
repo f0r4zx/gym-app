@@ -91,6 +91,7 @@ dependencies {
     implementation("org.maplibre.gl:android-sdk:13.7.1")
     implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation("androidx.media3:media3-exoplayer:1.11.1")
+    implementation("androidx.media3:media3-session:1.11.1")
     implementation("androidx.health.connect:connect-client:1.1.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")

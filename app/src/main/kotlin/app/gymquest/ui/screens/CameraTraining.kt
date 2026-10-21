@@ -142,6 +142,18 @@ fun CameraTraining(engine: TrainingEngine, settings: SettingsDto, onStop: () -> 
         }
     }
 
+    // Tell the DJ what part of the workout this is, so the next song fits it.
+    val music = (context.applicationContext as app.gymquest.GymQuestApp).music
+    LaunchedEffect(engine.hud.state) {
+        music.setPhase(
+            when (engine.hud.state) {
+                SessionState.ACTIVE -> app.gymquest.core.music.DjPhase.WORK
+                SessionState.SETUP, SessionState.COUNTDOWN -> app.gymquest.core.music.DjPhase.WARMUP
+                SessionState.PAUSED -> app.gymquest.core.music.DjPhase.REST
+            },
+        )
+    }
+
     // When the fight ends, leave the picture up for a moment before showing the result.
     LaunchedEffect(engine.hud.outcome) {
         if (engine.hud.outcome != null) {

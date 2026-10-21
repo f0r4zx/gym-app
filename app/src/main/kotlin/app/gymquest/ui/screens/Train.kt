@@ -64,6 +64,10 @@ fun TrainScreen(state: AppState, c: Controller) {
     val t = target
     when {
         t == null -> TrainMenu(state) { target = it }
+        t == "music" -> {
+            BackHandler { target = null }
+            MusicScreen(state, c) { target = null }
+        }
         t == "plan" -> {
             BackHandler { target = null }
             PlanScreen(state, c, onTrain = { target = it }, onBack = { target = null })
@@ -85,6 +89,11 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
         GqCard(onClick = { onPick("plan") }) {
             Text("📋 Mi plan y recomendaciones", fontWeight = FontWeight.Bold)
             Muted("Los mejores ejercicios para tu edad y tu meta, y tu semana de entrenamiento")
+        }
+
+        GqCard(onClick = { onPick("music") }) {
+            Text("🎧 Música y DJ", fontWeight = FontWeight.Bold)
+            Muted("Tu música con modo DJ; baja el volumen cuando el entrenador habla")
         }
 
         SectionTitle("⚔️ Jefes")
