@@ -18,7 +18,11 @@ mercado) se guarda en una cola local y se sincroniza cuando hay red.
 | GPS tipo Strava (caminar, correr, bici, senderismo): distancia, ritmo, parciales, desnivel, calorías, pausa automática | `tracking/ActivityRecorder` | ✅ |
 | Mapas 3D interactivos y cámara que sigue tu rumbo; repetición 3D del recorrido | `tracking/FollowCamera`, `RoutePlayback` | ✅ lógica · 📱 mapa 3D con cámara que sigue |
 | Descargar mapas para usar sin internet | `tracking/OfflineMapPlanner` | ✅ plan/tamaño · 📱 descarga por zonas (OfflineManager) |
-| Rutas populares y compartir rutas | `tracking/Polyline`, `Routes` | ✅ |
+| Rutas populares y compartir rutas | `tracking/Polyline`, `Routes` | ✅ lógica · ⏳ necesita servidor para compartir con otros |
+| Ir a un destino a pie/bici/auto con reportes en la ruta (tráfico, obras, baches…) | `routes/`, `app/routing` | 📱 ruta por servidores públicos de OpenStreetMap (con internet; sin internet, línea guía) · reportes guardados en tu teléfono · ⏳ compartirlos con otros |
+| Recuperar una actividad GPS si la app se cierra a mitad | `app/tracking/TrackJournal` | 📱 |
+| Territorio de un jugador: circuitos cerrados dibujados en el mapa | `territory/` | 📱 tus zonas · ⏳ pelear por zonas con otros (servidor) |
+| Crear stickers con tus fotos | `app/stickers` | 📱 (enviarlos en el chat necesita servidor) |
 | Perfil (peso, estatura, edad, género, objetivo), TMB/TDEE, calorías y macros | `fitness/` | ✅ |
 | Recomendar ejercicios por **edad** y objetivo (definir, volumen, resistencia…) | `AgeGuidance`, `ExerciseRecommender`, `WorkoutPlanner` | ✅ |
 | Comidas recomendadas según objetivo y dieta, lista de compras | `nutrition/MealPlanner`, `FoodSuggester` | ✅ |
@@ -28,7 +32,7 @@ mercado) se guarda en una cola local y se sincroniza cuando hay red.
 | Personaje que cambia con tu cuerpo, stats, ropa/recompensas | `avatar/` | ✅ stats, morph, 40 cosméticos · 📱 dibujo, ropa, tienda |
 | Territorio: cierra una ruta y conquista la zona; círculos más grandes ganan | `territory/` | ✅ |
 | Gremios, jefes cooperativos, guerras entre gremios, duelos (lagartijas/sentadillas/cuerda) | `guild/`, `competition/` | ✅ |
-| Misiones diarias y semanales | `missions/` | ✅ |
+| Misiones diarias y semanales | `missions/` | ✅ · 📱 pantalla de misiones, retos semanales, bonus y racha |
 | Mercado autorregulado e intercambio entre jugadores | `economy/` | ✅ |
 | Racha pública, ranking de amigos, retos, pareja, chat | `social/` | ✅ |
 | Reportes comunitarios en la ruta (tráfico, obras, baches) y destino | `routes/` | ✅ |
