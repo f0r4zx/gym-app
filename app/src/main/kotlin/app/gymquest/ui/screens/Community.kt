@@ -76,6 +76,12 @@ private fun isOnline(context: Context): Boolean {
 
 @Composable
 fun CommunityScreen(state: AppState, c: Controller) {
+    var stickers by rememberSaveable { mutableStateOf(false) }
+    if (stickers) {
+        androidx.activity.compose.BackHandler { stickers = false }
+        StickersScreen(c) { stickers = false }
+        return
+    }
     val online = rememberIsOnline()
     val profile = Derived.profile(state) ?: return
     var viewer by rememberSaveable { mutableStateOf(Relation.STRANGER.name) }
@@ -108,6 +114,11 @@ fun CommunityScreen(state: AppState, c: Controller) {
                 Pill("Servidor: no conectado")
             }
             Muted("Las funciones sociales (amigos, gremios, rankings, mercado entre jugadores y chat) necesitan el servidor de GymQuest, que todavía no está activo. Todo lo demás funciona sin internet.")
+        }
+
+        GqCard(onClick = { stickers = true }) {
+            Text("🎨 Mis stickers", fontWeight = FontWeight.Bold)
+            Muted("Crea stickers con tus fotos. Funciona sin internet.")
         }
 
         SectionTitle("Así te ven los demás")
