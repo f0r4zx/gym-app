@@ -106,7 +106,8 @@ class SmokeTest {
         }
         step("entrenar") {
             rule.onNodeWithText("Entrenar").performClick()
-            rule.onNodeWithText("⚔️ Jefes").assertIsDisplayed()
+            rule.onNodeWithText("📋 Mi plan y recomendaciones").assertIsDisplayed()
+            rule.onNodeWithText("⚔️ Jefes").performScrollTo().assertIsDisplayed()
         }
         step("comunidad") {
             rule.onNodeWithText("Comunidad").performClick()
