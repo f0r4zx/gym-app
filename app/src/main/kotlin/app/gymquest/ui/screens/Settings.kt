@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +43,7 @@ fun SettingsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
 
         SectionTitle("Mi perfil")
         GqCard(onClick = { c.change { Actions.startProfileEdit(it) } }) {
-            Text("✏️ Editar mis datos y mi objetivo", fontWeight = FontWeight.Bold)
+            Text(":edit: Editar mis datos y mi objetivo", fontWeight = FontWeight.Bold)
             Muted("Edad, estatura, peso, objetivo, equipo, dieta, piel y horario de sueño.")
         }
 
@@ -96,15 +96,15 @@ fun SettingsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
 
         SectionTitle("Ayuda rápida")
         GqCard {
-            Text("📷 Para que cuente bien", fontWeight = FontWeight.Bold)
+            Text(":camera: Para que cuente bien", fontWeight = FontWeight.Bold)
             Muted("Apoya el teléfono a 2–3 metros, a la altura de tu cintura, y deja que se te vea el cuerpo completo. Con buena luz y sin nada tapando las articulaciones. Puede estar inclinado: se corrige solo. Si no cuenta, la pantalla te dice qué mover.")
-            Text("🎧 Entrenador de voz", fontWeight = FontWeight.Bold)
+            Text(":headphones: Entrenador de voz", fontWeight = FontWeight.Bold)
             Muted("Usa audífonos y sube el volumen. Si tienes música sonando, baja sola mientras él habla. Puedes silenciarlo arriba en \"Voz del entrenador\".")
-            Text("🗺️ Mapas sin internet", fontWeight = FontWeight.Bold)
+            Text(":map: Mapas sin internet", fontWeight = FontWeight.Bold)
             Muted("Antes de salir, en Mapa → \"Sin internet\", descarga tu zona. El GPS funciona siempre; el mapa solo se ve sin conexión donde lo descargaste.")
-            Text("🔋 Batería", fontWeight = FontWeight.Bold)
+            Text(":battery: Batería", fontWeight = FontWeight.Bold)
             Muted("La app baja sola la calidad de la cámara si el teléfono se calienta o la batería está baja. Para actividades largas con GPS, deja la pantalla apagada: sigue grabando.")
-            Text("🔒 Privacidad", fontWeight = FontWeight.Bold)
+            Text(":lock: Privacidad", fontWeight = FontWeight.Bold)
             Muted("Tus datos, fotos y música se quedan en tu teléfono. Nada se sube hasta que conectes un servidor, y tú eliges quién ve tu racha y tus estadísticas.")
         }
 

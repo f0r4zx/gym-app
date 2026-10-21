@@ -165,7 +165,7 @@ class MusicModel(context: Context, private val scope: CoroutineScope) {
 
     fun like() {
         _nowPlaying.value?.let { taste.record(it.toCore(), ListenEvent.LIKED) }
-        _djNote.value = "♥ Anotado: te pondré más como esta"
+        _djNote.value = ":heart: Anotado: te pondré más como esta"
     }
 
     private fun onTrackEnded() {

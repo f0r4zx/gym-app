@@ -15,7 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -214,7 +214,7 @@ private fun Summary(dto: ProfileDto, today: LocalDate) {
     Title("Tu plan está listo, ${dto.name}", "Esto es lo que calculé con tus datos. Son estimaciones, no consejo médico.")
     GqCard {
         Text("Cada día", fontWeight = FontWeight.Bold)
-        Text("🔥 ${targets.kcal} kcal  ·  💧 ${targets.waterMl / 1000.0} L de agua")
+        Text(":flame: ${targets.kcal} kcal  ·  :droplet: ${targets.waterMl / 1000.0} L de agua")
         Text("Proteína ${targets.proteinG} g  ·  Carbohidratos ${targets.carbsG} g  ·  Grasa ${targets.fatG} g")
         Muted("IMC ${"%.1f".format(bmi)} · metabolismo basal ${targets.bmr} kcal · gasto total ${targets.tdee} kcal")
         if (targets.weeklyChangeKg != 0.0) {
@@ -226,9 +226,9 @@ private fun Summary(dto: ProfileDto, today: LocalDate) {
         GqCard {
             Text(
                 when (n.severity) {
-                    Severity.WARNING -> "⚠️ ${n.text}"
-                    Severity.TIP -> "💡 ${n.text}"
-                    Severity.INFO -> "ℹ️ ${n.text}"
+                    Severity.WARNING -> ":alert: ${n.text}"
+                    Severity.TIP -> ":bulb: ${n.text}"
+                    Severity.INFO -> ":bulb: ${n.text}"
                 },
             )
         }

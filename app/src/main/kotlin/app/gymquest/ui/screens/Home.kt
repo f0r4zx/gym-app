@@ -9,7 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,10 +56,10 @@ fun HomeScreen(state: AppState, c: Controller, open: (Sub) -> Unit, goTo: (Tab) 
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column {
-                Text("Hola, ${profile.name} 👋", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+                Text("Hola, ${profile.name} ", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
                 Muted(if (streak.activeToday) "Hoy ya cuenta para tu racha" else "Entrena hoy para mantener tu racha")
             }
-            OutlinedButton(onClick = { open(Sub.SETTINGS) }) { Text("⚙️") }
+            OutlinedButton(onClick = { open(Sub.SETTINGS) }) { Text(":settings:") }
         }
 
         GqCard(onClick = { open(Sub.CHARACTER) }) {
@@ -68,12 +68,12 @@ fun HomeScreen(state: AppState, c: Controller, open: (Sub) -> Unit, goTo: (Tab) 
                     Text("Nivel ${progress.level} · ${progress.title}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Muted("${progress.xpIntoLevel} / ${progress.xpForNext} XP para el siguiente nivel")
                 }
-                Pill("🪙 ${state.game.coins}", Gold.copy(alpha = 0.25f))
+                Pill(":coin: ${state.game.coins}", Gold.copy(alpha = 0.25f))
             }
             Bar(progress.fraction, color = MaterialTheme.colorScheme.primary, height = 12.dp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Pill("🔥 Racha ${streak.current} ${if (streak.current == 1) "día" else "días"}")
-                Pill("🏅 Récord ${streak.longest}")
+                Pill(":flame: Racha ${streak.current} ${if (streak.current == 1) "día" else "días"}")
+                Pill(":award: Récord ${streak.longest}")
             }
         }
 
@@ -120,39 +120,39 @@ fun HomeScreen(state: AppState, c: Controller, open: (Sub) -> Unit, goTo: (Tab) 
         GqCard(onClick = { open(Sub.MISSIONS) }) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("${board.completedCount} de ${board.missions.size} completadas", fontWeight = FontWeight.Bold)
-                Text("Ver ›", color = MaterialTheme.colorScheme.primary)
+                Text("Ver :chevron_right:", color = MaterialTheme.colorScheme.primary)
             }
             Bar(board.completedCount.toDouble() / board.missions.size.coerceAtLeast(1), color = Gold)
             board.missions.take(3).forEach { m ->
-                Text("${if (m.claimed) "✅" else if (m.complete) "🎁" else "⬜"} ${m.mission.title}", style = MaterialTheme.typography.bodyMedium)
+                Text("${if (m.claimed) ":check_circle:" else if (m.complete) ":gift:" else ":square:"} ${m.mission.title}", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             GqCard(Modifier.weight(1f), onClick = { goTo(Tab.TRAIN) }) {
-                Text("📋 Mi plan", fontWeight = FontWeight.Bold)
+                Text(":clipboard: Mi plan", fontWeight = FontWeight.Bold)
                 Muted("Ejercicios para tu edad y tu meta")
             }
             GqCard(Modifier.weight(1f), onClick = { open(Sub.DIARY) }) {
-                Text("📅 Diario", fontWeight = FontWeight.Bold)
+                Text(":calendar: Diario", fontWeight = FontWeight.Bold)
                 Muted("Tu calendario de entrenos")
             }
         }
 
         GqCard(onClick = { open(Sub.PROGRESS) }) {
-            Text("📈 Mi progreso", fontWeight = FontWeight.Bold)
+            Text(":trend: Mi progreso", fontWeight = FontWeight.Bold)
             Muted("Peso, actividad por semana y tus totales")
         }
 
         SectionTitle("¿Qué hacemos hoy?")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             GqCard(Modifier.weight(1f), onClick = { goTo(Tab.TRAIN) }) {
-                Text("⚔️", style = MaterialTheme.typography.headlineMedium)
+                Text(":swords:", style = MaterialTheme.typography.headlineMedium)
                 Text("Pelear con un jefe", fontWeight = FontWeight.Bold)
                 Muted("Cuenta repeticiones con la cámara")
             }
             GqCard(Modifier.weight(1f), onClick = { goTo(Tab.MAP) }) {
-                Text("🏃", style = MaterialTheme.typography.headlineMedium)
+                Text(":pulse:", style = MaterialTheme.typography.headlineMedium)
                 Text("Salir a moverte", fontWeight = FontWeight.Bold)
                 Muted("Camina, corre o pedalea con GPS")
             }
@@ -161,9 +161,9 @@ fun HomeScreen(state: AppState, c: Controller, open: (Sub) -> Unit, goTo: (Tab) 
 }
 
 private fun moodEmoji(mood: Mood) = when (mood) {
-    Mood.GREAT -> "🤩"
-    Mood.GOOD -> "😄"
-    Mood.OK -> "🙂"
-    Mood.TIRED -> "😴"
-    Mood.SAD -> "😕"
+    Mood.GREAT -> ":sparkles:"
+    Mood.GOOD -> ":smile:"
+    Mood.OK -> ":meh:"
+    Mood.TIRED -> ":moon:"
+    Mood.SAD -> ":frown:"
 }

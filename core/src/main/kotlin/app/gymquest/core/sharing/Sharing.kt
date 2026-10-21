@@ -117,7 +117,7 @@ object RoutineShare {
 
     /** A readable version for pasting into WhatsApp or a note. */
     fun toText(r: SharedRoutine): String = buildString {
-        appendLine("🏋️ ${r.name}" + (r.author?.let { " — por $it" } ?: ""))
+        appendLine(r.name + (r.author?.let { " — por $it" } ?: ""))
         for (d in r.days) {
             appendLine()
             appendLine(d.title)

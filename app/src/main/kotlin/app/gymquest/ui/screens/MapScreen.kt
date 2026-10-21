@@ -18,7 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -282,10 +282,10 @@ private fun IdlePanel(
     GqCard {
         Text("¿Qué vas a hacer?", fontWeight = FontWeight.Bold)
         ChoiceChips(ActivityType.entries, selected, { it.label }, onSelect)
-        PrimaryButton("▶ Empezar", onStart, Modifier.fillMaxWidth())
+        PrimaryButton(":play: Empezar", onStart, Modifier.fillMaxWidth())
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onTrip) { Text("🧭 Destino") }
-            OutlinedButton(onClick = onOffline) { Text("📥 Sin internet") }
+            OutlinedButton(onClick = onTrip) { Text(":compass: Destino") }
+            OutlinedButton(onClick = onOffline) { Text(":download: Sin internet") }
             val km = state.activities.sumOf { it.distanceM } / 1000.0
             Muted("Total: ${"%.1f".format(km)} km")
         }
@@ -308,8 +308,8 @@ private fun ActivePanel(live: app.gymquest.tracking.LiveTrack, nowMs: Long) {
             )
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Muted("⛰ +${live.gainM.toInt()} m")
-            Muted("🔥 ${live.calories} kcal")
+            Muted(":mountain: +${live.gainM.toInt()} m")
+            Muted(":flame: ${live.calories} kcal")
             Muted(
                 when (live.state) {
                     RecorderState.WAITING_FOR_FIX -> "Buscando GPS…"
@@ -324,8 +324,8 @@ private fun ActivePanel(live: app.gymquest.tracking.LiveTrack, nowMs: Long) {
             OutlinedButton(
                 onClick = { TrackingService.command(context, if (live.state == RecorderState.MANUAL_PAUSED) TrackingService.ACTION_RESUME else TrackingService.ACTION_PAUSE) },
                 modifier = Modifier.weight(1f),
-            ) { Text(if (live.state == RecorderState.MANUAL_PAUSED) "▶ Reanudar" else if (paused) "⏸ Pausado" else "⏸ Pausar") }
-            PrimaryButton("⏹ Terminar", { TrackingService.command(context, TrackingService.ACTION_STOP) }, Modifier.weight(1f))
+            ) { Text(if (live.state == RecorderState.MANUAL_PAUSED) ":play: Reanudar" else if (paused) ":pause: Pausado" else ":pause: Pausar") }
+            PrimaryButton(":stop: Terminar", { TrackingService.command(context, TrackingService.ACTION_STOP) }, Modifier.weight(1f))
         }
     }
 }
@@ -343,16 +343,16 @@ private fun ResultCard(r: ActivityResultInfo, onClose: () -> Unit) {
     val dto = r.dto
     GqCard {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("¡${r.type.label} terminada! 🎉", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+            Text("¡${r.type.label} terminada! :sparkles:", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
             Text("${Formats.distance(dto.distanceM)} en ${Formats.duration(dto.movingMs)}", fontWeight = FontWeight.Bold)
             val avg = if (dto.movingMs > 0) dto.distanceM / (dto.movingMs / 1000.0) else 0.0
             Muted(
                 (if (r.type.usesPace) "Ritmo medio ${Formats.pace(avg)}" else "Velocidad media ${Formats.speedKmh(avg)} km/h") +
                     " · +${dto.gainM.toInt()} m · ${dto.calories} kcal",
             )
-            if (r.loops > 0) Text("🗺 Cerraste ${r.loops} circuito(s): ${dto.cellsCaptured} zonas conquistadas", color = Gold, fontWeight = FontWeight.Bold)
+            if (r.loops > 0) Text(":map: Cerraste ${r.loops} circuito(s): ${dto.cellsCaptured} zonas conquistadas", color = Gold, fontWeight = FontWeight.Bold)
             if (r.reward.xp > 0) Text("+${r.reward.xp} XP", fontWeight = FontWeight.SemiBold)
-            r.reward.newLevel?.let { Text("🎉 ¡Nivel $it!", fontWeight = FontWeight.Bold) }
+            r.reward.newLevel?.let { Text(":sparkles: ¡Nivel $it!", fontWeight = FontWeight.Bold) }
             PrimaryButton("Listo", onClose, Modifier.fillMaxWidth())
         }
     }

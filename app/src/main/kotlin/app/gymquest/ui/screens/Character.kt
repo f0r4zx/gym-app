@@ -16,7 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -88,7 +88,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             Text(profile.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
             Muted(AvatarMorph.describe(shape), Modifier.align(Alignment.CenterHorizontally))
             Row(Modifier.align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Pill("⚡ Poder ${stats.power(now)}", Gold.copy(alpha = 0.25f))
+                Pill(":bolt: Poder ${stats.power(now)}", Gold.copy(alpha = 0.25f))
                 Pill("Nivel ${Derived.level(state)}")
             }
             Muted("Tu cuerpo cambia con tu peso real y con tus entrenamientos. Las estadísticas solo suben ejercitándote de verdad.", Modifier.align(Alignment.CenterHorizontally))
@@ -137,7 +137,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                         Modifier.size(34.dp).clip(CircleShape).background(skinColor(t))
                             .clickable { c.change { it.copy(settings = it.settings.copy(skinTone = t.name)) } },
                     ) {
-                        if (t == look.skin) Text("✓", Modifier.align(Alignment.Center), color = Color.Black, fontWeight = FontWeight.Bold)
+                        if (t == look.skin) Text(":check:", Modifier.align(Alignment.Center), color = Color.Black, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -150,7 +150,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                         Modifier.size(34.dp).clip(CircleShape).background(Color(col or (0xFF shl 24)))
                             .clickable { c.change { it.copy(settings = it.settings.copy(hairColor = col)) } },
                     ) {
-                        if (col == look.hairColor) Text("✓", Modifier.align(Alignment.Center), color = Color.White, fontWeight = FontWeight.Bold)
+                        if (col == look.hairColor) Text(":check:", Modifier.align(Alignment.Center), color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -179,7 +179,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             }
         }
 
-        SectionTitle("Tienda  ·  🪙 ${state.game.coins}")
+        SectionTitle("Tienda  ·  :coin: ${state.game.coins}")
         val forSale = Cosmetics.shopItems().filter { it.id !in owned }
         if (forSale.isEmpty()) Muted("Ya tienes todo lo de la tienda.")
         forSale.forEach { item -> ShopRow(item, state.game.coins) { c.change { s -> Actions.buy(s, item.id, c.today) ?: s }; c.say("¡Compraste ${item.name}!") } }
@@ -190,7 +190,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             GqCard {
                 locked.forEach { item ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("🔒 ${item.name}", Modifier.weight(1f))
+                        Text(":lock: ${item.name}", Modifier.weight(1f))
                         Muted(unlockText(item))
                     }
                 }
@@ -202,7 +202,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
         GqCard {
             Achievements.all.forEach { a ->
                 val done = a.id in state.game.achievements
-                Text("${if (done) "🏆" else "⬜"} ${a.name}", fontWeight = if (done) FontWeight.Bold else FontWeight.Normal)
+                Text("${if (done) ":trophy:" else ":square:"} ${a.name}", fontWeight = if (done) FontWeight.Bold else FontWeight.Normal)
                 Muted(a.description)
                 if (!done) Bar(a.fraction(ps), color = Orange, height = 6.dp)
             }
@@ -213,7 +213,7 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
 @Composable
 fun BackHeader(title: String, onBack: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = onBack) { Text("‹") }
+        OutlinedButton(onClick = onBack) { Text(":chevron_left:") }
         Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
     }
 }
@@ -227,7 +227,7 @@ private fun ShopRow(item: CosmeticItem, coins: Long, onBuy: () -> Unit) {
                 Text(item.name, fontWeight = FontWeight.SemiBold)
                 Muted("${item.slot.label} · ${item.rarity.label}")
             }
-            OutlinedButton(onClick = onBuy, enabled = coins >= price) { Text("🪙 $price") }
+            OutlinedButton(onClick = onBuy, enabled = coins >= price) { Text(":coin: $price") }
         }
     }
 }

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,7 +66,7 @@ internal fun SleepSources(state: AppState, c: Controller) {
         if (HealthSync.available(context)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (!hcGranted) {
-                    OutlinedButton(onClick = { hcPermission.launch(HealthSync.permissions) }, modifier = Modifier.weight(1f)) { Text("⌚ Conectar Health Connect") }
+                    OutlinedButton(onClick = { hcPermission.launch(HealthSync.permissions) }, modifier = Modifier.weight(1f)) { Text(":pulse: Conectar Health Connect") }
                 } else {
                     OutlinedButton(
                         onClick = {
@@ -74,21 +74,21 @@ internal fun SleepSources(state: AppState, c: Controller) {
                                 val s = HealthSync.lastNight(context)
                                 if (s != null) {
                                     save(c, s)
-                                    info = "Sueño importado de Health Connect ✓"
+                                    info = "Sueño importado de Health Connect :check:"
                                 } else {
                                     info = "Health Connect no tiene sueño de anoche."
                                 }
                             }
                         },
                         modifier = Modifier.weight(1f),
-                    ) { Text("⌚ Importar de Health Connect") }
+                    ) { Text(":pulse: Importar de Health Connect") }
                 }
             }
         } else {
             Muted("Health Connect no está disponible en este teléfono (instálalo desde Play Store si tu reloj lo usa).")
         }
         if (!usageAccess) {
-            OutlinedButton(onClick = { UsageProbe.openSettings(context) }, modifier = Modifier.fillMaxWidth()) { Text("📱 Permitir ver el uso de pantalla") }
+            OutlinedButton(onClick = { UsageProbe.openSettings(context) }, modifier = Modifier.fillMaxWidth()) { Text(":phone: Permitir ver el uso de pantalla") }
             Muted("Solo se leen las horas en que la pantalla se prende y apaga, nunca qué apps usas.")
         } else {
             OutlinedButton(
@@ -104,7 +104,7 @@ internal fun SleepSources(state: AppState, c: Controller) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("📱 Detectar con el uso del teléfono") }
+            ) { Text(":phone: Detectar con el uso del teléfono") }
         }
         if (info.isNotBlank()) Text(info, color = Mint)
     }
@@ -114,7 +114,7 @@ internal fun SleepSources(state: AppState, c: Controller) {
         if (usage != null) {
             val assess = ScreenTimeAdvisor.assess(usage, Derived.age(state, c.today))
             GqCard {
-                Text("📵 Uso del teléfono hoy", fontWeight = FontWeight.Bold)
+                Text(":phone_off: Uso del teléfono hoy", fontWeight = FontWeight.Bold)
                 Text(
                     "${usage.totalMs / 3_600_000} h ${usage.totalMs / 60_000 % 60} min · ${usage.pickups} desbloqueos",
                     color = when (assess.level) {

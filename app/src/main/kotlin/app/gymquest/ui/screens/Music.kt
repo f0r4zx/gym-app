@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -83,9 +83,9 @@ fun MusicScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                     Text(now?.title ?: "Nada sonando", fontWeight = FontWeight.Bold)
                     Muted(now?.let { t -> bpm[t.id.toString()]?.takeIf { it > 0 }?.let { "${t.artist} · ${it.roundToInt()} BPM" } ?: t.artist } ?: "Elige una canción de la lista")
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { music.toggle() }) { Text(if (playing) "⏸" else "▶") }
-                        OutlinedButton(onClick = { music.skip() }) { Text("⏭") }
-                        OutlinedButton(onClick = { music.like() }) { Text("♥") }
+                        OutlinedButton(onClick = { music.toggle() }) { Text(if (playing) ":pause:" else ":play:") }
+                        OutlinedButton(onClick = { music.skip() }) { Text(":skip:") }
+                        OutlinedButton(onClick = { music.like() }) { Text(":heart:") }
                     }
                     if (note.isNotBlank()) Muted(note)
                 }
@@ -94,7 +94,7 @@ fun MusicScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                 GqCard {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column2 {
-                            Text("🎧 Modo DJ", fontWeight = FontWeight.Bold)
+                            Text(":headphones: Modo DJ", fontWeight = FontWeight.Bold)
                             Muted("Elige la siguiente canción según lo que estés haciendo y aprende de lo que saltas o repites.")
                         }
                         Switch(checked = djOn, onCheckedChange = { music.setDj(it) })
@@ -131,7 +131,7 @@ fun MusicScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             }
             item {
                 GqCard {
-                    Text("👥 Música en grupo", fontWeight = FontWeight.Bold)
+                    Text(":community: Música en grupo", fontWeight = FontWeight.Bold)
                     Muted("Escuchar la misma lista sincronizada con tus amigos al correr necesita conexión entre teléfonos (Bluetooth/wifi directo o el servidor). La lógica de sincronización ya está lista; falta conectarla.")
                 }
             }

@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -75,7 +75,7 @@ internal fun SleepPanel(state: AppState, c: Controller) {
         }
         val battery = BodyBattery.current(score, debt, last.endMs, nowMs, workouts, lateScreenMinutes = lateMinutes)
         GqCard {
-            Text("🔋 Batería corporal: ${battery.level}%", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(":battery: Batería corporal: ${battery.level}%", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Bar(
                 battery.level / 100.0,
                 color = when {
@@ -116,7 +116,7 @@ internal fun SleepPanel(state: AppState, c: Controller) {
 
     val bedtime = BodyBattery.bedtimeFor(LocalTime.of(state.profile?.wakeHour ?: 7, 0), need)
     GqCard {
-        Text("🌙 Esta noche", fontWeight = FontWeight.Bold)
+        Text(":moon: Esta noche", fontWeight = FontWeight.Bold)
         Text(SleepScore.tonightAdvice(debt, need))
         Muted("Para despertar a las ${state.profile?.wakeHour ?: 7}:00 con una noche completa, acuéstate a las ${bedtime.hour}:${"%02d".format(bedtime.minute)}.")
     }

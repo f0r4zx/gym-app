@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -94,11 +94,11 @@ internal fun FoodPhoto(diet: DietPreferences, onAdd: (FoodMatch) -> Unit) {
                 if (has) launchCamera() else permission.launch(Manifest.permission.CAMERA)
             },
             modifier = Modifier.weight(1f),
-        ) { Text("📷 Foto de comida") }
+        ) { Text(":camera: Foto de comida") }
         OutlinedButton(
             onClick = { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
             modifier = Modifier.weight(1f),
-        ) { Text("🖼 Galería") }
+        ) { Text(":image: Galería") }
     }
 
     if (busy) Muted("Analizando la foto…")

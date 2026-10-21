@@ -9,7 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +45,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 private enum class LifeTab(val label: String) {
-    WATER("💧 Agua"), FOOD("🍽️ Comida"), SKIN("🧴 Piel"), WEIGHT("⚖️ Peso"), SLEEP("😴 Sueño")
+    WATER(":droplet: Agua"), FOOD(":utensils: Comida"), SKIN(":sparkles: Piel"), WEIGHT(":scale: Peso"), SLEEP(":moon: Sueño")
 }
 
 @Composable
@@ -81,7 +81,7 @@ private fun WaterPanel(state: AppState, c: Controller) {
     val pace = Hydration.pace(day.waterMl, target, now.hour + now.minute / 60.0, state.profile?.wakeHour ?: 7, (state.profile?.sleepHour ?: 23) % 24)
 
     GqCard {
-        Text("🥤 $glasses de $goalGlasses vasos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(":glass: $glasses de $goalGlasses vasos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Muted("${day.waterMl} ml de $target ml (vaso de ${Hydration.GLASS_ML} ml)")
         Bar(day.waterMl.toDouble() / target, color = Sky, height = 16.dp)
         Text(
@@ -130,7 +130,7 @@ private fun SkinPanel(state: AppState, c: Controller) {
         }
     }
     GqCard {
-        Text("🚿 Lavadas de cara hoy: ${day.faceWashes}", fontWeight = FontWeight.Bold)
+        Text(":droplet: Lavadas de cara hoy: ${day.faceWashes}", fontWeight = FontWeight.Bold)
         Muted(SkincareStats.washAdvice(day.faceWashes))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             PrimaryButton("Me lavé la cara", { c.change { Actions.washFace(it, c.today) } })
@@ -155,9 +155,9 @@ private fun WeightPanel(state: AppState, c: Controller) {
         Muted("IMC ${"%.1f".format(bmi)} · ${BodyMetrics.bmiCategory(bmi).label} · rango saludable ${"%.0f".format(range.start)}–${"%.0f".format(range.endInclusive)} kg")
         Text(
             when (assessment.status) {
-                TrendStatus.ON_TRACK -> "✅ ${assessment.message}"
-                TrendStatus.INSUFFICIENT_DATA -> "ℹ️ ${assessment.message}"
-                else -> "⚠️ ${assessment.message}"
+                TrendStatus.ON_TRACK -> ":check_circle: ${assessment.message}"
+                TrendStatus.INSUFFICIENT_DATA -> ":bulb: ${assessment.message}"
+                else -> ":alert: ${assessment.message}"
             },
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {

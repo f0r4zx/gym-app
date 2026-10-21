@@ -14,7 +14,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,13 +24,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.gymquest.data.Actions
 import app.gymquest.data.AppState
 import app.gymquest.data.GymRepository
 import app.gymquest.data.Reward
 import app.gymquest.data.Result
+import app.gymquest.ui.components.Ic
+import app.gymquest.ui.components.Ico
+import app.gymquest.ui.components.plainText
 import app.gymquest.ui.screens.CharacterScreen
 import app.gymquest.ui.screens.CommunityScreen
 import app.gymquest.ui.screens.DiaryScreen
@@ -66,24 +70,24 @@ class Controller(
     fun change(block: (AppState) -> AppState) = repo.update(block)
 
     fun say(text: String) {
-        messages.trySend(text)
+        messages.trySend(plainText(text))
     }
 
     fun announce(reward: Reward) {
         if (reward.isEmpty) return
         val parts = buildList {
             if (reward.xp > 0) add("+${reward.xp} XP")
-            if (reward.coins > 0) add("+${reward.coins} 🪙")
+            if (reward.coins > 0) add("+${reward.coins} monedas")
             reward.newLevel?.let { add("¡Nivel $it!") }
-            reward.achievements.forEach { add("🏆 $it") }
-            reward.items.forEach { add("🎁 $it") }
+            reward.achievements.forEach { add("Logro: $it") }
+            reward.items.forEach { add("Nuevo objeto: $it") }
         }
         if (parts.isNotEmpty()) messages.trySend(parts.joinToString("  ·  "))
     }
 }
 
-enum class Tab(val label: String, val icon: String) {
-    HOME("Inicio", "🏠"), TRAIN("Entrenar", "💪"), MAP("Mapa", "🗺️"), LIFE("Vida", "🌿"), COMMUNITY("Comunidad", "👥")
+enum class Tab(val label: String, val icon: ImageVector) {
+    HOME("Inicio", Ico.home), TRAIN("Entrenar", Ico.train), MAP("Mapa", Ico.map), LIFE("Vida", Ico.life), COMMUNITY("Comunidad", Ico.community)
 }
 
 enum class Sub { CHARACTER, MISSIONS, SETTINGS, DIARY, PROGRESS }
@@ -147,7 +151,7 @@ private fun MainShell(repo: GymRepository, state: AppState, today: LocalDate) {
                         NavigationBarItem(
                             selected = t == tab,
                             onClick = { tabName = t.name },
-                            icon = { Text(t.icon, fontSize = 22.sp) },
+                            icon = { Ic(t.icon, size = 24.dp) },
                             label = { Text(t.label) },
                         )
                     }

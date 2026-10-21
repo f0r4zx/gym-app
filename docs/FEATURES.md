@@ -11,7 +11,7 @@ mercado) se guarda en una cola local y se sincroniza cuando hay red.
 
 | Pedido | Módulo `:core` | Estado |
 |---|---|---|
-| Contar repeticiones con la cámara (sentadillas, lagartijas, dominadas, curls, press, abdominales, burpees, plancha, cuerda…) con el teléfono en cualquier lugar | `exercise/`, `pose/`, `sim/` | ✅ 18 ejercicios, ~140 tests |
+| Contar repeticiones con la cámara (sentadillas, lagartijas, dominadas, curls, press, abdominales, burpees, plancha, cuerda…) con el teléfono en cualquier lugar, con cámara trasera o frontal (se cambia en vivo) | `exercise/`, `pose/`, `sim/` | ✅ 18 ejercicios, ~140 tests |
 | Guía de encuadre ("aléjate", "gírate de lado"), cuenta atrás, pausa si sales del cuadro | `FramingAnalyzer`, `WorkoutSession` | ✅ |
 | Jefes que se derrotan con repeticiones, combos, críticos, furia | `game/BossBattle`, `Bosses` | ✅ 13 jefes |
 | XP, niveles, logros, rachas | `game/Progression`, `Achievements`, `Streaks` | ✅ |

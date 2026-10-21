@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -146,7 +146,7 @@ internal fun FoodPanel(state: AppState, c: Controller) {
                         Muted("${f.kcal.roundToInt()} kcal · P ${f.protein.roundToInt()} g")
                     }
                     Text(
-                        "✕", modifier = Modifier.clickable { c.change { Actions.removeFood(it, index, c.today) } }.padding(12.dp),
+                        ":close:", modifier = Modifier.clickable { c.change { Actions.removeFood(it, index, c.today) } }.padding(12.dp),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }

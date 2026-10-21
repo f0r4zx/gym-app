@@ -10,7 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +65,7 @@ fun PlanScreen(state: AppState, c: Controller, onTrain: (String) -> Unit, onBack
                 (if (advice.weekly.balanceDays > 0) ", equilibrio ${advice.weekly.balanceDays} días" else "") + ".")
             Muted(advice.weekly.note)
             Muted("Calentamiento: ${advice.warmupMinutes} min · pulso máximo estimado ${advice.maxHeartRate} lpm · máx. ${advice.maxHardDaysPerWeek} días fuertes por semana.")
-            advice.cautions.forEach { Text("⚠ $it", color = Danger, style = androidx.compose.material3.MaterialTheme.typography.bodySmall) }
+            advice.cautions.forEach { Text(":alert: $it", color = Danger, style = androidx.compose.material3.MaterialTheme.typography.bodySmall) }
         }
 
         SectionTitle("Los mejores ejercicios para ti")
@@ -74,7 +74,7 @@ fun PlanScreen(state: AppState, c: Controller, onTrain: (String) -> Unit, onBack
             GqCard(onClick = tracked?.let { t -> { onTrain("free:${t.id}") } }) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text(r.exercise.name, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                    if (tracked != null) Pill("📷 Con cámara", Mint.copy(alpha = 0.25f))
+                    if (tracked != null) Pill(":camera: Con cámara", Mint.copy(alpha = 0.25f))
                 }
                 Muted(r.exercise.primary.label)
                 r.reasons.take(2).forEach { Muted("• $it") }
@@ -93,10 +93,10 @@ fun PlanScreen(state: AppState, c: Controller, onTrain: (String) -> Unit, onBack
                     val reps = if (i.minReps == i.maxReps) "${i.minReps}" else "${i.minReps}-${i.maxReps}"
                     Text("• ${i.exercise.name} — ${i.sets}×$reps${if (i.exercise.timed) " s" else ""}, descanso ${i.restSeconds} s")
                 }
-                d.cardioNote?.let { Muted("🏃 $it") }
+                d.cardioNote?.let { Muted(":pulse: $it") }
             }
         }
-        plan.notes.forEach { Muted("ℹ $it") }
+        plan.notes.forEach { Muted(":bulb: $it") }
 
         SectionTitle("Rutinas de amigos")
         ImportRoutine(c)
@@ -128,7 +128,7 @@ fun PlanScreen(state: AppState, c: Controller, onTrain: (String) -> Unit, onBack
                 context.startActivity(Intent.createChooser(send, "Compartir rutina"))
             },
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("📤 Compartir mi rutina") }
+        ) { Text(":share: Compartir mi rutina") }
         Muted("Las recomendaciones son orientativas. Si tienes una lesión o condición médica, consulta a un profesional.")
     }
 }

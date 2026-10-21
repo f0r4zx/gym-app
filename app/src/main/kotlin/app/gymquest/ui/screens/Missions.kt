@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +44,7 @@ fun MissionsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                     Text("${board.completedCount} de ${board.missions.size} completadas", fontWeight = FontWeight.Bold)
                     Muted("Cambian cada día según tu nivel, edad y equipo")
                 }
-                Pill("🔥 x${"%.1f".format(multiplier)}", Gold.copy(alpha = 0.25f))
+                Pill(":flame: x${"%.1f".format(multiplier)}", Gold.copy(alpha = 0.25f))
             }
             Bar(board.completedCount.toDouble() / board.missions.size.coerceAtLeast(1), color = Gold, height = 12.dp)
             Muted("Racha de días completando todas: ${state.game.missionStreak}. Cada día seguido sube el multiplicador de recompensas (máx. x1.5).")
@@ -54,7 +54,7 @@ fun MissionsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             GqCard(container = if (p.claimed) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Pill(p.mission.category.label)
-                    Text("+${(p.mission.xp * multiplier).roundToInt()} XP  ·  +${(p.mission.coins * multiplier).roundToInt()} 🪙", style = MaterialTheme.typography.labelMedium)
+                    Text("+${(p.mission.xp * multiplier).roundToInt()} XP  ·  +${(p.mission.coins * multiplier).roundToInt()} :coin:", style = MaterialTheme.typography.labelMedium)
                 }
                 Text(p.mission.title, fontWeight = FontWeight.Bold)
                 Muted(p.mission.description)
@@ -62,7 +62,7 @@ fun MissionsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Muted("${formatProgress(p.progress)} / ${p.mission.target}")
                     when {
-                        p.claimed -> Text("✅ Reclamada")
+                        p.claimed -> Text(":check_circle: Reclamada")
                         p.complete -> PrimaryButton("Reclamar", { c.act { Actions.claimMission(it, p.mission.id, c.today) } })
                         else -> Unit
                     }
@@ -76,14 +76,14 @@ fun MissionsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             GqCard(container = if (p.claimed) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Pill(p.mission.category.label)
-                    Text("+${p.mission.xp} XP  ·  +${p.mission.coins} 🪙", style = MaterialTheme.typography.labelMedium)
+                    Text("+${p.mission.xp} XP  ·  +${p.mission.coins} :coin:", style = MaterialTheme.typography.labelMedium)
                 }
                 Text(p.mission.title, fontWeight = FontWeight.Bold)
                 Bar(p.fraction, color = if (p.complete) Mint else MaterialTheme.colorScheme.tertiary)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Muted("${formatProgress(p.progress)} / ${p.mission.target}")
                     when {
-                        p.claimed -> Text("✅ Reclamado")
+                        p.claimed -> Text(":check_circle: Reclamado")
                         p.complete -> PrimaryButton("Reclamar", { c.act { Actions.claimWeekly(it, p.mission.id, c.today) } })
                         else -> Unit
                     }
@@ -93,8 +93,8 @@ fun MissionsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
 
         if (board.allComplete) {
             GqCard(container = Gold.copy(alpha = 0.18f)) {
-                Text("🎉 ¡Completaste todo el día!", fontWeight = FontWeight.Bold)
-                if (board.bonusClaimed) Text("✅ Bonus reclamado")
+                Text(":sparkles: ¡Completaste todo el día!", fontWeight = FontWeight.Bold)
+                if (board.bonusClaimed) Text(":check_circle: Bonus reclamado")
                 else PrimaryButton("Reclamar bonus del día", { c.act { Actions.claimMissionBonus(it, c.today) } })
             }
         }

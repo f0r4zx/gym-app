@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -88,9 +88,9 @@ fun DiaryScreen(state: AppState, c: Controller, onBack: () -> Unit) {
     ) {
         BackHeader("Diario", onBack)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = { monthOffset-- }) { Text("‹") }
+            OutlinedButton(onClick = { monthOffset-- }) { Text(":chevron_left:") }
             Text(DiaryCalendar.summaryText(cal).substringBefore(":"), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            OutlinedButton(onClick = { monthOffset++ }, enabled = monthOffset < 0) { Text("›") }
+            OutlinedButton(onClick = { monthOffset++ }, enabled = monthOffset < 0) { Text(":chevron_right:") }
         }
         GqCard {
             Row(Modifier.fillMaxWidth()) {
@@ -107,7 +107,7 @@ fun DiaryScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                                 .clickable(enabled = cell.date != null) { selected = cell.date.toString() },
                             contentAlignment = Alignment.Center,
                         ) {
-                            cell.date?.let { d -> Text(if (cell.inStreak) "🔥" else d.dayOfMonth.toString(), fontSize = 13.sp) }
+                            cell.date?.let { d -> Text(if (cell.inStreak) ":flame:" else d.dayOfMonth.toString(), fontSize = 13.sp) }
                         }
                     }
                     repeat(7 - week.size) { Box(Modifier.weight(1f)) }
@@ -119,23 +119,23 @@ fun DiaryScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             GqCard {
                 Text(e.date.toString(), fontWeight = FontWeight.Bold)
                 if (!e.isActive) Muted("Día de descanso")
-                e.workouts.forEach { Text("💪 ${it.title} · ${it.minutes} min · ${it.kcal} kcal") }
-                e.activities.forEach { Text("🏃 ${it.type.label} · ${"%.1f".format(it.km)} km · ${it.minutes} min") }
-                e.kcalEaten?.let { Muted("🍽 $it kcal") }
-                e.waterMl?.let { Muted("💧 $it ml") }
-                e.sleepHours?.let { Muted("😴 ${"%.1f".format(it)} h") }
+                e.workouts.forEach { Text(":train: ${it.title} · ${it.minutes} min · ${it.kcal} kcal") }
+                e.activities.forEach { Text(":pulse: ${it.type.label} · ${"%.1f".format(it.km)} km · ${it.minutes} min") }
+                e.kcalEaten?.let { Muted(":utensils: $it kcal") }
+                e.waterMl?.let { Muted(":droplet: $it ml") }
+                e.sleepHours?.let { Muted(":moon: ${"%.1f".format(it)} h") }
             }
         }
         OutlinedButton(
             onClick = {
                 val send = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "📅 " + DiaryCalendar.summaryText(cal))
+                    putExtra(Intent.EXTRA_TEXT, "Mi mes en GymQuest: " + DiaryCalendar.summaryText(cal))
                 }
                 context.startActivity(Intent.createChooser(send, "Compartir mi mes"))
             },
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("📤 Compartir mi mes") }
+        ) { Text(":share: Compartir mi mes") }
         Muted("Al compartir solo se envía el resumen: nunca tu peso, comidas ni notas.")
     }
 }

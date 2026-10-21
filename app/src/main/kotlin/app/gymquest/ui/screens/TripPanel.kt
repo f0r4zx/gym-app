@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,8 +71,8 @@ fun TripPanel(
 
     GqCard {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("🧭 Ir a un destino", fontWeight = FontWeight.Bold)
-            Text("✕", modifier = Modifier.clickableNoRipple(onClose))
+            Text(":compass: Ir a un destino", fontWeight = FontWeight.Bold)
+            Text(":close:", modifier = Modifier.clickableNoRipple(onClose))
         }
         ChoiceChips(TRAVEL, travel, { it.label }, onTravel)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -94,7 +94,7 @@ fun TripPanel(
         }
         results.forEach { p ->
             Text(
-                "📍 ${p.name}",
+                ":pin: ${p.name}",
                 modifier = Modifier.clickableNoRipple {
                     results = emptyList()
                     onDestination(p.point)
@@ -115,7 +115,7 @@ fun TripPanel(
             }
             val onRoute = RouteAhead.reportsOnRoute(r.points, reports, now)
             if (onRoute.isNotEmpty()) {
-                Text("⚠ ${onRoute.size} reporte(s) en tu ruta", color = Gold, fontWeight = FontWeight.SemiBold)
+                Text(":alert: ${onRoute.size} reporte(s) en tu ruta", color = Gold, fontWeight = FontWeight.SemiBold)
                 onRoute.take(3).forEach { (rep, d) -> Muted("• ${rep.type.label} a ${Formats.distance(d)}") }
             }
 
@@ -133,12 +133,12 @@ fun TripPanel(
                                 OfflineDownloader.start(
                                     context, state.settings.mapStyle, plan.bounds, plan.minZoom, plan.maxZoom, "Ruta · ${Formats.distance(r.distanceM)}",
                                     onProgress = { progress = it },
-                                    onDone = { progress = null; c.say("Mapa de la ruta descargado ✓") },
+                                    onDone = { progress = null; c.say("Mapa de la ruta descargado :check:") },
                                     onError = { progress = null; c.say(it) },
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text("📥 Mapa de esta ruta sin internet (≈ ${plan.estimatedMb.roundToInt()} MB)") }
+                        ) { Text(":download: Mapa de esta ruta sin internet (≈ ${plan.estimatedMb.roundToInt()} MB)") }
                     }
                 }
             }
@@ -147,7 +147,7 @@ fun TripPanel(
 
         // Community hazards: saved on the phone now; shared with others once the server exists.
         if (!reporting) {
-            OutlinedButton(onClick = { reporting = true }, enabled = position != null, modifier = Modifier.fillMaxWidth()) { Text("⚠ Reportar algo aquí") }
+            OutlinedButton(onClick = { reporting = true }, enabled = position != null, modifier = Modifier.fillMaxWidth()) { Text(":alert: Reportar algo aquí") }
         } else {
             Text("¿Qué hay aquí?", fontWeight = FontWeight.SemiBold)
             ChoiceChips(REPORTABLE, ReportType.HAZARD, { it.label }, { type ->

@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +48,7 @@ fun StickersScreen(c: Controller, onBack: () -> Unit) {
                 if (made != null) {
                     files = StickerStore.list(context)
                     caption = ""
-                    c.say("Sticker creado ✓")
+                    c.say("Sticker creado :check:")
                 } else {
                     c.say("No pude leer esa imagen.")
                 }
@@ -60,7 +60,7 @@ fun StickersScreen(c: Controller, onBack: () -> Unit) {
         BackHeader("Mis stickers", onBack)
         GqCard {
             OutlinedTextField(caption, { caption = it.take(24) }, label = { Text("Texto del sticker (opcional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            PrimaryButton("🖼 Crear desde una foto", { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.fillMaxWidth())
+            PrimaryButton(":image: Crear desde una foto", { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.fillMaxWidth())
             Muted("Se recorta en cuadrado y se guarda en tu teléfono. Podrás enviarlos en el chat cuando esté el servidor.")
         }
         if (files.isEmpty()) Muted("Aún no tienes stickers.")

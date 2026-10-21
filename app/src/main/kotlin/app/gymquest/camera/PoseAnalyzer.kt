@@ -26,7 +26,7 @@ import java.util.concurrent.Executor
 class PoseAnalyzer(
     private val executor: Executor,
     private val pacer: FramePacer,
-    private val mirror: Boolean,
+    private val mirror: () -> Boolean,
     private val model: () -> PoseModel,
     private val onPose: (PoseFrame?, Double) -> Unit,
 ) : ImageAnalysis.Analyzer {
@@ -72,7 +72,7 @@ class PoseAnalyzer(
             if (i !in 0 until Joint.COUNT) continue
             val pos = p.position
             var x = (pos.x / width).toDouble()
-            if (mirror) x = 1.0 - x
+            if (mirror()) x = 1.0 - x
             // Depth is not used by the counters (they work from 2D angles), so it is left at zero.
             byType[i] = Landmark(x, (pos.y / height).toDouble(), 0.0, p.inFrameLikelihood.toDouble())
         }

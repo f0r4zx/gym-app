@@ -14,7 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -87,16 +87,16 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
         Muted("La cámara cuenta tus repeticiones y revisa tu postura. Funciona sin internet.")
 
         GqCard(onClick = { onPick("plan") }) {
-            Text("📋 Mi plan y recomendaciones", fontWeight = FontWeight.Bold)
+            Text(":clipboard: Mi plan y recomendaciones", fontWeight = FontWeight.Bold)
             Muted("Los mejores ejercicios para tu edad y tu meta, y tu semana de entrenamiento")
         }
 
         GqCard(onClick = { onPick("music") }) {
-            Text("🎧 Música y DJ", fontWeight = FontWeight.Bold)
+            Text(":headphones: Música y DJ", fontWeight = FontWeight.Bold)
             Muted("Tu música con modo DJ; baja el volumen cuando el entrenador habla")
         }
 
-        SectionTitle("⏱ Retos de 60 segundos")
+        SectionTitle(":timer: Retos de 60 segundos")
         GqCard {
             Muted("Tu récord personal en un minuto. Subir el récord da XP extra y cuenta como duelo en tus misiones.")
             CHALLENGE_EXERCISES.forEach { ex ->
@@ -111,13 +111,13 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
             }
         }
 
-        SectionTitle("⚔️ Jefes")
+        SectionTitle(":swords: Jefes")
         Bosses.all.forEach { boss ->
             val locked = level < boss.unlockLevel
             val beaten = boss.id in state.game.bosses
             GqCard(onClick = if (locked) null else ({ onPick("boss:${boss.id}") })) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text((if (locked) "🔒 " else if (beaten) "✅ " else "") + boss.name, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text((if (locked) ":lock: " else if (beaten) ":check_circle: " else "") + boss.name, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     Pill(boss.tier.label)
                 }
                 Muted(boss.title)
@@ -129,7 +129,7 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
             }
         }
 
-        SectionTitle("🏋️ Entrenamiento libre")
+        SectionTitle(":train: Entrenamiento libre")
         ExerciseCategory.entries.forEach { cat ->
             val items = ExerciseType.entries.filter { it.category == cat }
             if (items.isEmpty()) return@forEach
@@ -178,6 +178,10 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
     // A saved "live" stage without an engine (process restarted) falls back to the intro.
     val current = Stage.valueOf(stage).let { if (it == Stage.LIVE && engine == null) Stage.INTRO else if (it == Stage.RESULT && summary == null) Stage.INTRO else it }
 
+    fun setFrontCamera(front: Boolean) {
+        c.change { it.copy(settings = it.settings.copy(useFrontCamera = front)) }
+    }
+
     fun begin() {
         val sp = speaker[0] ?: Speaker(context).also { speaker[0] = it }
         val stats = Derived.statValues(state, System.currentTimeMillis())
@@ -224,11 +228,15 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
     when (current) {
         Stage.INTRO -> {
             BackHandler { onExit() }
-            Intro(type, boss, timed, targetReps, { targetReps = it }, state.game.best60[type.id] ?: 0, onStart = ::requestStart, onBack = onExit)
+            Intro(
+                type, boss, timed, targetReps, { targetReps = it }, state.game.best60[type.id] ?: 0,
+                front = state.settings.useFrontCamera, onFront = ::setFrontCamera,
+                onStart = ::requestStart, onBack = onExit,
+            )
         }
         Stage.LIVE -> {
             BackHandler { finish() }
-            engine?.let { CameraTraining(it, state.settings, onStop = ::finish) }
+            engine?.let { CameraTraining(it, state.settings, onFrontChanged = ::setFrontCamera, onStop = ::finish) }
         }
         Stage.RESULT -> {
             BackHandler { onExit() }
@@ -238,7 +246,10 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
 }
 
 @Composable
-private fun Intro(type: ExerciseType, boss: Boss?, timed: Boolean, targetReps: Int, onTarget: (Int) -> Unit, best: Int, onStart: () -> Unit, onBack: () -> Unit) {
+private fun Intro(
+    type: ExerciseType, boss: Boss?, timed: Boolean, targetReps: Int, onTarget: (Int) -> Unit, best: Int,
+    front: Boolean, onFront: (Boolean) -> Unit, onStart: () -> Unit, onBack: () -> Unit,
+) {
     Column(
         Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -251,19 +262,22 @@ private fun Intro(type: ExerciseType, boss: Boss?, timed: Boolean, targetReps: I
                 Muted("Vence a ${boss.name} con ${boss.exercises.joinToString(" o ") { it.displayName.lowercase() }}. Si descansas demasiado, te ataca.")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Pill("${boss.maxHp} PV")
-                    Pill("⏱ ${boss.timeLimitMs / 60_000} min")
+                    Pill(":timer: ${boss.timeLimitMs / 60_000} min")
                     Pill("+${boss.xpReward} XP", Gold.copy(alpha = 0.25f))
                 }
             }
         }
         GqCard {
-            Text("📱 Cómo colocar el celular", fontWeight = FontWeight.Bold)
+            Text(":phone: Cómo colocar el celular", fontWeight = FontWeight.Bold)
             Text(type.setupTip)
             Muted("Vista: ${type.view.label}. Puede estar inclinado o apoyado en cualquier cosa; se corrige solo.")
+            Text("Cámara", fontWeight = FontWeight.SemiBold)
+            ChoiceChips(listOf(false, true), front, { if (it) ":camera: Frontal" else ":camera: Trasera" }, onFront)
+            Muted("También puedes cambiarla mientras entrenas con el botón de girar.")
         }
         if (timed) {
             GqCard {
-                Text("⏱ Reto de 60 segundos", fontWeight = FontWeight.Bold)
+                Text(":timer: Reto de 60 segundos", fontWeight = FontWeight.Bold)
                 Muted("Haz todas las repeticiones buenas que puedas en un minuto. El reloj empieza cuando termina la cuenta regresiva.")
                 if (best > 0) Muted("Tu récord: $best")
                 Muted("Las repeticiones a medias no cuentan para el récord.")
@@ -288,7 +302,7 @@ private fun TrainResult(s: TrainingSummary, reward: Reward, boss: Boss?, timed: 
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         val title = when {
-            boss != null && s.victory == true -> "¡Derrotaste a ${boss.name}! 🏆"
+            boss != null && s.victory == true -> "¡Derrotaste a ${boss.name}! :trophy:"
             boss != null -> "${boss.name} te venció esta vez"
             s.reps > 0 -> "¡Buen trabajo!"
             else -> "Sin repeticiones esta vez"
@@ -299,16 +313,16 @@ private fun TrainResult(s: TrainingSummary, reward: Reward, boss: Boss?, timed: 
             Muted("${s.type.displayName} · calidad media ${(s.avgQuality * 100).roundToInt()}% · mejor combo x${s.bestCombo}")
             Muted("Tiempo activo: ${s.durationMs / 60_000}:${"%02d".format(s.durationMs / 1000 % 60)}")
             if (boss != null && s.victory == true) {
-                if (s.flawless) Text("✨ ¡Victoria perfecta! Bonus de XP", color = Gold, fontWeight = FontWeight.Bold)
-                Cosmetics.byId(boss.lootId)?.let { Text("🎁 Botín: ${it.name}", color = Mint, fontWeight = FontWeight.Bold) }
+                if (s.flawless) Text(":sparkles: ¡Victoria perfecta! Bonus de XP", color = Gold, fontWeight = FontWeight.Bold)
+                Cosmetics.byId(boss.lootId)?.let { Text(":gift: Botín: ${it.name}", color = Mint, fontWeight = FontWeight.Bold) }
             }
         }
         if (timed) {
             val record = s.avgQuality >= 0.6 && s.reps > previousBest
             Text(
                 when {
-                    record && previousBest > 0 -> "🏅 ¡Nuevo récord! Antes: $previousBest"
-                    record -> "🏅 ¡Primer récord guardado!"
+                    record && previousBest > 0 -> ":award: ¡Nuevo récord! Antes: $previousBest"
+                    record -> ":award: ¡Primer récord guardado!"
                     s.reps > previousBest -> "Buen número, pero la técnica estuvo floja y no cuenta como récord."
                     else -> "Tu récord sigue en $previousBest. ¡Inténtalo otra vez!"
                 },
@@ -319,13 +333,13 @@ private fun TrainResult(s: TrainingSummary, reward: Reward, boss: Boss?, timed: 
             GqCard(container = Gold.copy(alpha = 0.15f)) {
                 Text("Recompensas", fontWeight = FontWeight.Bold)
                 if (reward.xp > 0) Text("+${reward.xp} XP")
-                if (reward.coins > 0) Text("+${reward.coins} 🪙 monedas")
-                reward.newLevel?.let { Text("🎉 ¡Subiste al nivel $it!", fontWeight = FontWeight.Bold) }
-                reward.achievements.forEach { Text("🏆 Logro: $it") }
-                reward.items.forEach { Text("🎁 Nuevo objeto: $it") }
+                if (reward.coins > 0) Text("+${reward.coins} :coin: monedas")
+                reward.newLevel?.let { Text(":sparkles: ¡Subiste al nivel $it!", fontWeight = FontWeight.Bold) }
+                reward.achievements.forEach { Text(":trophy: Logro: $it") }
+                reward.items.forEach { Text(":gift: Nuevo objeto: $it") }
             }
         }
-        if (s.reps > 0 && s.avgQuality < 0.6) Text("💡 Baja el ritmo y cuida el rango completo: las repeticiones de calidad dan más XP y más daño.", color = Danger)
+        if (s.reps > 0 && s.avgQuality < 0.6) Text(":bulb: Baja el ritmo y cuida el rango completo: las repeticiones de calidad dan más XP y más daño.", color = Danger)
         PrimaryButton("Otra serie", onAgain, Modifier.fillMaxWidth())
         OutlinedButton(onClick = onExit, modifier = Modifier.fillMaxWidth()) { Text("Volver") }
     }

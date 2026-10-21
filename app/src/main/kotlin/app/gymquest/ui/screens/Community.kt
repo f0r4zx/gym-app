@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import app.gymquest.ui.components.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +39,7 @@ import app.gymquest.data.Derived
 import app.gymquest.data.enumOr
 import app.gymquest.ui.Controller
 import app.gymquest.ui.components.ChoiceChips
+import app.gymquest.ui.components.Dot
 import app.gymquest.ui.components.GqCard
 import app.gymquest.ui.components.Muted
 import app.gymquest.ui.components.Pill
@@ -107,17 +108,20 @@ fun CommunityScreen(state: AppState, c: Controller) {
         Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("👥 Comunidad", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+        Text(":community: Comunidad", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
         GqCard {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(if (online) "🟢 Con conexión" else "🔴 Sin conexión", fontWeight = FontWeight.Bold)
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Dot(if (online) Mint else Danger)
+                    Text(if (online) "Con conexión" else "Sin conexión", fontWeight = FontWeight.Bold)
+                }
                 Pill("Servidor: no conectado")
             }
             Muted("Las funciones sociales (amigos, gremios, rankings, mercado entre jugadores y chat) necesitan el servidor de GymQuest, que todavía no está activo. Todo lo demás funciona sin internet.")
         }
 
         GqCard(onClick = { stickers = true }) {
-            Text("🎨 Mis stickers", fontWeight = FontWeight.Bold)
+            Text(":palette: Mis stickers", fontWeight = FontWeight.Bold)
             Muted("Crea stickers con tus fotos. Funciona sin internet.")
         }
 
@@ -134,17 +138,17 @@ fun CommunityScreen(state: AppState, c: Controller) {
             if (view != null) {
                 Text(view.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(listOfNotNull(view.title, view.level?.let { "Nivel $it" }).joinToString(" · ").ifBlank { "Perfil privado" })
-                Text(view.currentStreak?.let { "🔥 Racha de $it días (récord ${view.longestStreak})" } ?: "🔒 Racha oculta")
-                Text(view.power?.let { "⚡ Poder $it · ${view.bossesDefeated} jefes" } ?: "🔒 Estadísticas ocultas")
-                Text(if (view.weightKg == null) "🔒 Peso y medidas ocultos" else "⚠ Tu peso es visible", color = if (view.weightKg == null) Mint else Danger)
+                Text(view.currentStreak?.let { ":flame: Racha de $it días (récord ${view.longestStreak})" } ?: ":lock: Racha oculta")
+                Text(view.power?.let { ":bolt: Poder $it · ${view.bossesDefeated} jefes" } ?: ":lock: Estadísticas ocultas")
+                Text(if (view.weightKg == null) ":lock: Peso y medidas ocultos" else ":alert: Tu peso es visible", color = if (view.weightKg == null) Mint else Danger)
             }
         }
 
         SectionTitle("Qué funciona sin internet")
         val groups = listOf(
-            "✅ Siempre disponible" to NetworkNeed.NONE,
-            "🟡 Con límites sin conexión" to NetworkNeed.OPTIONAL,
-            "🔌 Necesita internet y servidor" to NetworkNeed.REQUIRED,
+            ":check_circle: Siempre disponible" to NetworkNeed.NONE,
+            ":alert: Con límites sin conexión" to NetworkNeed.OPTIONAL,
+            ":plug: Necesita internet y servidor" to NetworkNeed.REQUIRED,
         )
         groups.forEach { (title, need) ->
             val features = Feature.entries.filter { it.need == need }

@@ -2,6 +2,9 @@ package app.gymquest
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -33,6 +36,9 @@ class SmokeTest {
 
     @get:Rule(order = 1)
     val rule = createAndroidComposeRule<MainActivity>()
+
+    /** The first node whose text contains [words]; labels carry an inline icon, so they are matched by the words only. */
+    private fun text(words: String): SemanticsNodeInteraction = rule.onAllNodesWithText(words, substring = true).onFirst()
 
     /** Runs one part of the walk-through; on failure it says which part and dumps what was on screen. */
     private fun step(name: String, block: () -> Unit) {
@@ -80,34 +86,34 @@ class SmokeTest {
             rule.waitForIdle()
         }
         step("inicio") {
-            rule.onNodeWithText("Hola, Tester", substring = true).assertIsDisplayed()
+            text("Hola, Tester").assertIsDisplayed()
         }
         step("vida: agua") {
             rule.onNodeWithText("Vida").performClick()
             rule.onNodeWithText("Vida y bienestar").assertIsDisplayed()
             rule.onNodeWithText("+1 vaso").performClick()
-            rule.onNodeWithText("🥤 1 de", substring = true).assertIsDisplayed()
+            text("1 de").assertIsDisplayed()
         }
         step("vida: comida") {
-            rule.onNodeWithText("🍽️ Comida").performClick()
+            text("Comida").performClick()
             rule.onNodeWithText("Agregar comida").assertIsDisplayed()
         }
         step("vida: piel") {
-            rule.onNodeWithText("🧴 Piel").performClick()
+            text("Piel").performClick()
             rule.onNodeWithText("Rutina de hoy").assertIsDisplayed()
         }
         step("vida: peso") {
-            rule.onNodeWithText("⚖️ Peso").performClick()
+            text("Peso").performClick()
             rule.onNodeWithText("Peso de hoy").assertIsDisplayed()
         }
         step("vida: sueño") {
-            rule.onNodeWithText("😴 Sueño").performClick()
+            text("Sueño").performClick()
             rule.onNodeWithText("Tu cuerpo necesita").assertIsDisplayed()
         }
         step("entrenar") {
             rule.onNodeWithText("Entrenar").performClick()
-            rule.onNodeWithText("📋 Mi plan y recomendaciones").assertIsDisplayed()
-            rule.onNodeWithText("⚔️ Jefes").performScrollTo().assertIsDisplayed()
+            text("Mi plan y recomendaciones").assertIsDisplayed()
+            text("Jefes").performScrollTo().assertIsDisplayed()
         }
         step("comunidad") {
             rule.onNodeWithText("Comunidad").performClick()
@@ -116,11 +122,11 @@ class SmokeTest {
         step("mapa") {
             rule.onNodeWithText("Mapa").performClick()
             rule.waitForIdle()
-            rule.onNodeWithText("▶ Empezar").assertIsDisplayed()
+            text("Empezar").assertIsDisplayed()
         }
         step("personaje") {
             rule.onNodeWithText("Inicio").performClick()
-            rule.onNodeWithText("Nivel 1", substring = true).performClick()
+            text("Nivel 1").performClick()
             rule.onNodeWithText("Mi personaje").assertIsDisplayed()
             rule.onNodeWithText("Estadísticas").performScrollTo().assertIsDisplayed()
         }

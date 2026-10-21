@@ -176,7 +176,7 @@ object NotificationPlanner {
         val (type, title, body, link) = when (event) {
             is AppEvent.StreakExtended ->
                 if (!isStreakMilestone(event.days)) return null
-                else Quad(NotificationType.STREAK_MILESTONE, "🔥 ¡${event.days} días de racha!", milestoneText(event.days), "app://profile")
+                else Quad(NotificationType.STREAK_MILESTONE, "¡${event.days} días de racha!", milestoneText(event.days), "app://profile")
             is AppEvent.FriendPassedYou ->
                 Quad(NotificationType.RANKING, "${event.friendName} te pasó en el ranking", "Ahora vas en el lugar ${event.newRank}. ¡Recupéralo hoy!", "app://ranking")
             is AppEvent.FriendStreakMilestone ->
