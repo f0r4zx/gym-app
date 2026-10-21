@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import app.gymquest.notify.Notifier
 import app.gymquest.ui.AppRoot
 import app.gymquest.ui.theme.GymQuestTheme
 
@@ -23,5 +24,7 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         repo.flush()
+        // Re-plan today's reminders from what has been done so far.
+        Notifier.replan(this, repo.state.value)
     }
 }

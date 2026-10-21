@@ -1,6 +1,12 @@
 package app.gymquest.ui
 
+import android.Manifest
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import app.gymquest.notify.Notifier
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
@@ -113,6 +119,18 @@ private fun MainShell(repo: GymRepository, state: AppState, today: LocalDate) {
         }
     }
     val controller = remember(repo, today, messages) { Controller(repo, today, messages) }
+
+    // Ask once for permission to show reminders (Android 13+).
+    val context = LocalContext.current
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) Notifier.replan(context, repo.state.value, today)
+    }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 33 && !Notifier.canPost(context) && !state.settings.notificationsAsked) {
+            repo.update { it.copy(settings = it.settings.copy(notificationsAsked = true)) }
+            askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     BackHandler(enabled = sub != null) { subName = null }
     BackHandler(enabled = sub == null && tab != Tab.HOME) { tabName = Tab.HOME.name }

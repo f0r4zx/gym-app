@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.gymquest.core.notifications.NotificationType
 import app.gymquest.data.AppState
 import app.gymquest.ui.Controller
 import app.gymquest.ui.components.ChoiceChips
@@ -23,6 +24,11 @@ import app.gymquest.ui.components.SectionTitle
 
 private val VOICE = listOf("SILENT" to "Silencio", "MINIMAL" to "Poca", "NORMAL" to "Normal", "CHATTY" to "Animador")
 private val STRICT = listOf("RELAXED" to "Relajado", "NORMAL" to "Normal", "STRICT" to "Estricto")
+private val SOCIAL = setOf("FRIEND_ACTIVITY", "RANKING", "CHALLENGE")
+private val MAP_STYLES = listOf(
+    "3D claro" to app.gymquest.data.DEFAULT_MAP_STYLE,
+    "Calles" to "https://tiles.openfreemap.org/styles/bright",
+)
 private val VISIBILITY = listOf("PUBLIC" to "Todos", "FRIENDS" to "Amigos", "PRIVATE" to "Solo yo")
 
 @Composable
@@ -49,6 +55,28 @@ fun SettingsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             ToggleRow("Música entre series (DJ entrenador)", s.restMusic) { v -> c.change { it.copy(settings = it.settings.copy(restMusic = v)) } }
             ToggleRow("Sincronizar la música con mi cadencia (BPM)", s.bpmSync) { v -> c.change { it.copy(settings = it.settings.copy(bpmSync = v)) } }
             Muted("Es opcional: si lo activas, la canción se elige según tus pasos o repeticiones por minuto.")
+        }
+
+        SectionTitle("Recordatorios")
+        GqCard {
+            val effective = if (s.notificationTypes.isEmpty()) NotificationType.entries.filter { it.defaultOn }.map { it.name } else s.notificationTypes
+            NotificationType.entries.filter { it.name !in SOCIAL }.forEach { type ->
+                ToggleRow(type.label, type.name in effective) { on ->
+                    val next = if (on) effective + type.name else effective - type.name
+                    c.change { it.copy(settings = it.settings.copy(notificationTypes = next.distinct())) }
+                }
+            }
+            Muted("Los recordatorios se calculan en tu teléfono y llegan aunque no haya internet. Los avisos de amigos y rankings necesitan conexión.")
+        }
+
+        SectionTitle("Mapa")
+        GqCard {
+            Text("Estilo de mapa", fontWeight = FontWeight.SemiBold)
+            ChoiceChips(
+                MAP_STYLES, MAP_STYLES.firstOrNull { it.second == s.mapStyle } ?: MAP_STYLES[0], { it.first },
+                { v -> c.change { it.copy(settings = it.settings.copy(mapStyle = v.second)) } },
+            )
+            Muted("Las zonas descargadas solo se ven con el estilo con el que se descargaron.")
         }
 
         SectionTitle("Privacidad")

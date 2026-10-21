@@ -139,6 +139,7 @@ data class SettingsDto(
     val hairStyle: String = "SHORT",
     val hairColor: Int = 0x2B1B12,
     val mapStyle: String = DEFAULT_MAP_STYLE,
+    val notificationsAsked: Boolean = false,
 )
 
 /** A free vector-tile style with 3D buildings and no API key. Can be changed in Settings. */
