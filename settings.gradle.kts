@@ -1,31 +1,21 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        google()
         mavenCentral()
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google\\.(android|mlkit|firebase).*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // Central first: it holds the Kotlin libraries, and Google Maven is only asked for what Central lacks.
         mavenCentral()
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google\\.(android|mlkit|firebase).*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
     }
 }
 
 rootProject.name = "GymQuest"
 
 include(":core")
+include(":app")
