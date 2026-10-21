@@ -47,14 +47,20 @@ class PoseAnalyzer(
         val width = if (sideways) image.height else image.width
         val height = if (sideways) image.width else image.height
 
-        val input = InputImage.fromMediaImage(media, rotation)
-        detectorFor(model()).process(input)
-            .addOnSuccessListener(executor) { pose ->
-                val took = (SystemClock.elapsedRealtime() - started).toDouble()
-                onPose(toFrame(pose, width, height, SystemClock.elapsedRealtime()), took)
-            }
-            .addOnFailureListener(executor) { onPose(null, 0.0) }
-            .addOnCompleteListener(executor) { image.close() }
+        try {
+            val input = InputImage.fromMediaImage(media, rotation)
+            detectorFor(model()).process(input)
+                .addOnSuccessListener(executor) { pose ->
+                    val took = (SystemClock.elapsedRealtime() - started).toDouble()
+                    onPose(toFrame(pose, width, height, SystemClock.elapsedRealtime()), took)
+                }
+                .addOnFailureListener(executor) { onPose(null, 0.0) }
+                .addOnCompleteListener(executor) { image.close() }
+        } catch (e: Exception) {
+            // A broken detector must never crash the camera; skip this frame.
+            image.close()
+            onPose(null, 0.0)
+        }
     }
 
     private fun toFrame(pose: Pose, width: Int, height: Int, nowMs: Long): PoseFrame? {
