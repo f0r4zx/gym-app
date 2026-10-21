@@ -1,0 +1,60 @@
+name: Discover versions
+
+on:
+  workflow_dispatch:
+  push:
+    paths: [".github/workflows/discover-versions.yml"]
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Latest versions on Google Maven
+        run: |
+          base=https://dl.google.com/dl/android/maven2
+          show() {
+            path="$1"
+            echo "== $path"
+            curl -fsS "$base/$path/maven-metadata.xml" | grep -oE '<version>[^<]+</version>' | sed -E 's/<[^>]+>//g' | grep -vE 'alpha|beta|rc|RC|dev|eap|SNAPSHOT' | tail -4 | tr '\n' ' '
+            echo
+          }
+          show com/android/tools/build/gradle
+          show androidx/compose/compose-bom
+          show androidx/activity/activity-compose
+          show androidx/navigation/navigation-compose
+          show androidx/lifecycle/lifecycle-runtime-compose
+          show androidx/core/core-ktx
+          show androidx/camera/camera-core
+          show androidx/camera/camera-camera2
+          show androidx/camera/camera-lifecycle
+          show androidx/camera/camera-view
+          show com/google/mlkit/pose-detection
+          show com/google/mlkit/pose-detection-accurate
+          show com/google/mlkit/image-labeling
+          show com/google/android/gms/play-services-location
+          show androidx/room/room-runtime
+          show androidx/room/room-ktx
+          show androidx/work/work-runtime-ktx
+          show androidx/datastore/datastore-preferences
+          show androidx/health/connect/connect-client
+          show androidx/media3/media3-exoplayer
+          show androidx/media3/media3-session
+          show com/google/devtools/ksp/symbol-processing-gradle-plugin || true
+      - name: Plugins on Gradle plugin portal and Maven Central
+        run: |
+          for coords in \
+            "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin" \
+            "https://repo.maven.apache.org/maven2/com/google/devtools/ksp/symbol-processing-gradle-plugin" \
+            "https://repo.maven.apache.org/maven2/org/maplibre/gl/android-sdk" \
+            "https://repo.maven.apache.org/maven2/io/coil-kt/coil3/coil-compose" \
+            "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android"; do
+            echo "== $coords"
+            curl -fsS "$coords/maven-metadata.xml" | grep -oE '<version>[^<]+</version>' | sed -E 's/<[^>]+>//g' | grep -vE 'alpha|beta|rc|RC|dev|eap|SNAPSHOT|pre' | tail -4 | tr '\n' ' '
+            echo
+          done
+      - name: Gradle and Android SDK on the runner
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" 2>/dev/null | tr '\n' ' '; echo
+          ls "$ANDROID_HOME/build-tools" 2>/dev/null | tr '\n' ' '; echo
+          java -version 2>&1 | head -1
