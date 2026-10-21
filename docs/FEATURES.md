@@ -31,7 +31,7 @@ mercado) se guarda en una cola local y se sincroniza cuando hay red.
 | Notificaciones (racha en riesgo, agua, skincare, amigos, ranking…) | `notifications/` | ✅ · 📱 recordatorios locales sin internet (los de amigos/ranking esperan al servidor) |
 | Personaje que cambia con tu cuerpo, stats, ropa/recompensas | `avatar/` | ✅ stats, morph, 40 cosméticos · 📱 dibujo, ropa, tienda |
 | Territorio: cierra una ruta y conquista la zona; círculos más grandes ganan | `territory/` | ✅ |
-| Gremios, jefes cooperativos, guerras entre gremios, duelos (lagartijas/sentadillas/cuerda) | `guild/`, `competition/` | ✅ |
+| Gremios, jefes cooperativos, guerras entre gremios, duelos (lagartijas/sentadillas/cuerda) | `guild/`, `competition/` | ✅ lógica · 📱 retos de 60 s con récord personal · ⏳ duelos y guerras reales (servidor) |
 | Misiones diarias y semanales | `missions/` | ✅ · 📱 pantalla de misiones, retos semanales, bonus y racha |
 | Mercado autorregulado e intercambio entre jugadores | `economy/` | ✅ |
 | Racha pública, ranking de amigos, retos, pareja, chat | `social/` | ✅ |
