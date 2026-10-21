@@ -220,4 +220,23 @@ class ActionsTest {
         assertTrue(r.reward.xp > 0)
         assertEquals(3.0, r.state.game.totalKm, 0.001)
     }
+
+    @Test
+    fun aTimedChallengeSetsRecordsAndCountsAsADuel() {
+        val first = Actions.finishTimed(started(), ExerciseType.PUSH_UP, 30, 0.9, 60_000, 1_000L, today)
+        assertEquals(30, first.state.game.best60[ExerciseType.PUSH_UP.id])
+
+        val worse = Actions.finishTimed(first.state, ExerciseType.PUSH_UP, 20, 0.9, 60_000, 2_000L, today)
+        assertEquals(30, worse.state.game.best60[ExerciseType.PUSH_UP.id])
+
+        val better = Actions.finishTimed(worse.state, ExerciseType.PUSH_UP, 35, 0.9, 60_000, 3_000L, today)
+        assertEquals(35, better.state.game.best60[ExerciseType.PUSH_UP.id])
+        assertTrue("beating a record pays a bonus", better.reward.coins >= 10)
+    }
+
+    @Test
+    fun sloppyRepsDoNotSetARecord() {
+        val r = Actions.finishTimed(started(), ExerciseType.SQUAT, 50, 0.3, 60_000, 1_000L, today)
+        assertNull(r.state.game.best60[ExerciseType.SQUAT.id])
+    }
 }

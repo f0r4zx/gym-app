@@ -96,6 +96,21 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
             Muted("Tu música con modo DJ; baja el volumen cuando el entrenador habla")
         }
 
+        SectionTitle("⏱ Retos de 60 segundos")
+        GqCard {
+            Muted("Tu récord personal en un minuto. Subir el récord da XP extra y cuenta como duelo en tus misiones.")
+            CHALLENGE_EXERCISES.forEach { ex ->
+                val best = state.game.best60[ex.id] ?: 0
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(ex.displayName, fontWeight = FontWeight.SemiBold)
+                        Muted(if (best > 0) "Récord: $best" else "Sin récord todavía")
+                    }
+                    OutlinedButton(onClick = { onPick("timed:${ex.id}") }) { Text("Empezar") }
+                }
+            }
+        }
+
         SectionTitle("⚔️ Jefes")
         Bosses.all.forEach { boss ->
             val locked = level < boss.unlockLevel
@@ -136,11 +151,16 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
 
 private enum class Stage { INTRO, LIVE, RESULT }
 
+private const val CHALLENGE_MS = 60_000L
+private val CHALLENGE_EXERCISES = listOf(ExerciseType.PUSH_UP, ExerciseType.SQUAT, ExerciseType.JUMPING_JACK, ExerciseType.JUMP_ROPE)
+
 @Composable
 private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: () -> Unit) {
     val context = LocalContext.current
     val boss: Boss? = if (target.startsWith("boss:")) Bosses.byId(target.removePrefix("boss:")) else null
-    val type: ExerciseType? = boss?.primaryExercise ?: ExerciseType.entries.firstOrNull { it.id == target.removePrefix("free:") }
+    val timed = target.startsWith("timed:")
+    val type: ExerciseType? = boss?.primaryExercise
+        ?: ExerciseType.entries.firstOrNull { it.id == target.removePrefix("free:").removePrefix("timed:") }
     if (type == null) {
         onExit()
         return
@@ -151,6 +171,7 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
     var engine by remember { mutableStateOf<TrainingEngine?>(null) }
     var summary by remember { mutableStateOf<TrainingSummary?>(null) }
     var reward by remember { mutableStateOf(Reward.NONE) }
+    var previousBest by remember { mutableIntStateOf(0) }
     val speaker = remember { arrayOfNulls<Speaker>(1) }
     DisposableEffect(Unit) { onDispose { speaker[0]?.shutdown() } }
 
@@ -166,8 +187,9 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
             speaker = sp,
             strictness = enumOr(state.settings.strictness, Strictness.NORMAL),
             verbosity = enumOr(state.settings.voice, Verbosity.NORMAL),
-            targetReps = if (boss == null) targetReps else null,
+            targetReps = if (boss == null && !timed) targetReps else null,
             modifiers = if (boss != null) BattleModifiers.fromStats(stats) else BattleModifiers.NONE,
+            timeLimitMs = if (timed) CHALLENGE_MS else null,
         )
         stage = Stage.LIVE.name
     }
@@ -176,11 +198,16 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
         val e = engine ?: return
         val s = e.finish()
         summary = s
+        previousBest = state.game.best60[s.type.id] ?: 0
         reward = c.act {
-            Actions.finishSet(
-                it, s.type, s.reps, s.avgQuality, s.durationMs, System.currentTimeMillis(), c.today,
-                bossId = s.bossId, victory = s.victory, flawless = s.flawless, bestCombo = s.bestCombo,
-            )
+            if (timed) {
+                Actions.finishTimed(it, s.type, s.reps, s.avgQuality, s.durationMs, System.currentTimeMillis(), c.today)
+            } else {
+                Actions.finishSet(
+                    it, s.type, s.reps, s.avgQuality, s.durationMs, System.currentTimeMillis(), c.today,
+                    bossId = s.bossId, victory = s.victory, flawless = s.flawless, bestCombo = s.bestCombo,
+                )
+            }
         }
         engine = null
         stage = Stage.RESULT.name
@@ -197,7 +224,7 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
     when (current) {
         Stage.INTRO -> {
             BackHandler { onExit() }
-            Intro(type, boss, targetReps, { targetReps = it }, onStart = ::requestStart, onBack = onExit)
+            Intro(type, boss, timed, targetReps, { targetReps = it }, state.game.best60[type.id] ?: 0, onStart = ::requestStart, onBack = onExit)
         }
         Stage.LIVE -> {
             BackHandler { finish() }
@@ -205,13 +232,13 @@ private fun TrainFlow(state: AppState, c: Controller, target: String, onExit: ()
         }
         Stage.RESULT -> {
             BackHandler { onExit() }
-            summary?.let { TrainResult(it, reward, boss, onAgain = { stage = Stage.INTRO.name }, onExit = onExit) }
+            summary?.let { TrainResult(it, reward, boss, timed, previousBest, onAgain = { stage = Stage.INTRO.name }, onExit = onExit) }
         }
     }
 }
 
 @Composable
-private fun Intro(type: ExerciseType, boss: Boss?, targetReps: Int, onTarget: (Int) -> Unit, onStart: () -> Unit, onBack: () -> Unit) {
+private fun Intro(type: ExerciseType, boss: Boss?, timed: Boolean, targetReps: Int, onTarget: (Int) -> Unit, best: Int, onStart: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -234,7 +261,14 @@ private fun Intro(type: ExerciseType, boss: Boss?, targetReps: Int, onTarget: (I
             Text(type.setupTip)
             Muted("Vista: ${type.view.label}. Puede estar inclinado o apoyado en cualquier cosa; se corrige solo.")
         }
-        if (boss == null) {
+        if (timed) {
+            GqCard {
+                Text("⏱ Reto de 60 segundos", fontWeight = FontWeight.Bold)
+                Muted("Haz todas las repeticiones buenas que puedas en un minuto. El reloj empieza cuando termina la cuenta regresiva.")
+                if (best > 0) Muted("Tu récord: $best")
+                Muted("Las repeticiones a medias no cuentan para el récord.")
+            }
+        } else if (boss == null) {
             GqCard {
                 Text(if (type.mode == CountingMode.HOLD) "Meta de segundos" else "Meta de repeticiones", fontWeight = FontWeight.Bold)
                 val options = if (type.mode == CountingMode.HOLD) listOf(20, 30, 45, 60, 90) else listOf(5, 10, 15, 20, 30)
@@ -248,7 +282,7 @@ private fun Intro(type: ExerciseType, boss: Boss?, targetReps: Int, onTarget: (I
 }
 
 @Composable
-private fun TrainResult(s: TrainingSummary, reward: Reward, boss: Boss?, onAgain: () -> Unit, onExit: () -> Unit) {
+private fun TrainResult(s: TrainingSummary, reward: Reward, boss: Boss?, timed: Boolean, previousBest: Int, onAgain: () -> Unit, onExit: () -> Unit) {
     Column(
         Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -268,6 +302,18 @@ private fun TrainResult(s: TrainingSummary, reward: Reward, boss: Boss?, onAgain
                 if (s.flawless) Text("✨ ¡Victoria perfecta! Bonus de XP", color = Gold, fontWeight = FontWeight.Bold)
                 Cosmetics.byId(boss.lootId)?.let { Text("🎁 Botín: ${it.name}", color = Mint, fontWeight = FontWeight.Bold) }
             }
+        }
+        if (timed) {
+            val record = s.avgQuality >= 0.6 && s.reps > previousBest
+            Text(
+                when {
+                    record && previousBest > 0 -> "🏅 ¡Nuevo récord! Antes: $previousBest"
+                    record -> "🏅 ¡Primer récord guardado!"
+                    s.reps > previousBest -> "Buen número, pero la técnica estuvo floja y no cuenta como récord."
+                    else -> "Tu récord sigue en $previousBest. ¡Inténtalo otra vez!"
+                },
+                fontWeight = FontWeight.Bold, color = if (record) Gold else MaterialTheme.colorScheme.onSurface,
+            )
         }
         if (!reward.isEmpty) {
             GqCard(container = Gold.copy(alpha = 0.15f)) {

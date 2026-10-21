@@ -183,6 +183,8 @@ data class GameDto(
     val weekKey: String = "",
     val weekProgress: Map<String, Double> = emptyMap(),
     val weekClaimed: Set<String> = emptySet(),
+    /** Best reps in a 60-second challenge, per exercise id. */
+    val best60: Map<String, Int> = emptyMap(),
 )
 
 @Serializable

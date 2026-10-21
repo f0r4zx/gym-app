@@ -250,6 +250,34 @@ object Actions {
         return Result(granted.state, reward + granted.reward)
     }
 
+    /** A timed challenge (e.g. 60 s of push-ups): a normal set plus a personal best and a "duel played" mission tick. */
+    fun finishTimed(
+        state: AppState,
+        type: ExerciseType,
+        reps: Int,
+        avgQuality: Double,
+        durationMs: Long,
+        nowMs: Long,
+        today: LocalDate,
+    ): Result {
+        val previous = state.game.best60[type.id] ?: 0
+        val base = finishSet(state, type, reps, avgQuality, durationMs, nowMs, today)
+        var s = base.state
+        var reward = base.reward
+        if (reps > 0) s = withMissionEvent(s, GameEvent.DuelPlayed, today)
+        // A personal best needs decent form, so rushed half-reps cannot set records.
+        val counts = avgQuality >= 0.6
+        if (counts && reps > previous) {
+            s = s.copy(game = s.game.copy(best60 = s.game.best60 + (type.id to reps)))
+            if (previous > 0) {
+                val bonus = grantXp(s, 25, today, coins = 10)
+                s = bonus.state
+                reward += bonus.reward
+            }
+        }
+        return Result(s, reward)
+    }
+
     fun finishActivity(state: AppState, dto: ActivityDto, activity: ActivityType, today: LocalDate, loops: List<LoopDto> = emptyList()): Result {
         val km = dto.distanceM / 1000.0
         val key = today.toEpochDay()

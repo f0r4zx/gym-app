@@ -65,6 +65,8 @@ class TrainingEngine(
     verbosity: Verbosity,
     targetReps: Int?,
     private val modifiers: BattleModifiers,
+    /** For timed challenges: the set ends by itself this long after counting starts. */
+    private val timeLimitMs: Long? = null,
 ) {
     private val session = WorkoutSession(type, strictness)
     private val voice = VoiceCoach(type, VoiceConfig(verbosity = verbosity, targetReps = targetReps))
@@ -75,6 +77,7 @@ class TrainingEngine(
     private var bossXp = 0
     private var lootId: String? = null
     private var flawless = false
+    private var activeStartMs = -1L
 
     var hud by mutableStateOf(Hud(bossHp = boss?.let { 1.0 }, playerHp = boss?.let { 1.0 }))
         private set
@@ -111,7 +114,11 @@ class TrainingEngine(
             handle(b.tick(frame.timestampMs))?.let { popup = it }
         }
 
-        val outcome = outcomeNow()
+        if (update.state == SessionState.ACTIVE && activeStartMs < 0) activeStartMs = frame.timestampMs
+        val elapsed = if (activeStartMs >= 0) frame.timestampMs - activeStartMs else 0L
+        val timeUp = timeLimitMs != null && activeStartMs >= 0 && elapsed >= timeLimitMs
+        val outcome = outcomeNow() ?: if (timeUp) Outcome.FINISHED else null
+        val challengeLeft = timeLimitMs?.let { ((it - elapsed).coerceAtLeast(0) / 1000).toInt() }
         val message = when (update.state) {
             SessionState.SETUP, SessionState.PAUSED -> update.framing.message
             SessionState.COUNTDOWN -> "Prepárate…"
@@ -128,7 +135,7 @@ class TrainingEngine(
             liveIssue = update.counter?.liveIssues?.firstOrNull()?.message,
             bossHp = b?.bossHpFraction ?: hud.bossHp,
             playerHp = b?.playerHpFraction ?: hud.playerHp,
-            timeLeftSec = b?.let { (it.timeLeftMs / 1000).toInt() },
+            timeLeftSec = challengeLeft ?: b?.let { (it.timeLeftMs / 1000).toInt() },
             popup = popup ?: hud.popup,
             popupId = if (popup != null) ++popupCounter else hud.popupId,
             outcome = outcome,

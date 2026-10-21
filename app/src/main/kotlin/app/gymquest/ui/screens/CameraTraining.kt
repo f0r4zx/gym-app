@@ -206,8 +206,8 @@ private fun TrainingHud(engine: TrainingEngine, onStop: () -> Unit) {
                     if (hud.bossHp != null) {
                         Bar(hud.bossHp, color = Danger, height = 12.dp)
                         Bar(hud.playerHp ?: 1.0, color = Mint, height = 8.dp)
-                        hud.timeLeftSec?.let { Text("⏱ ${it / 60}:${"%02d".format(it % 60)}", color = Color.White, fontSize = 12.sp) }
                     }
+                    hud.timeLeftSec?.let { Text("⏱ ${it / 60}:${"%02d".format(it % 60)}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold) }
                 }
             }
             OutlinedButton(onClick = onStop) { Text(if (hud.reps > 0 || hud.outcome != null) "Terminar" else "Salir", color = Color.White) }
