@@ -239,4 +239,17 @@ class ActionsTest {
         val r = Actions.finishTimed(started(), ExerciseType.SQUAT, 50, 0.3, 60_000, 1_000L, today)
         assertNull(r.state.game.best60[ExerciseType.SQUAT.id])
     }
+
+    @Test
+    fun savedRoutinesAreReplacedByNameAndDeletable() {
+        val a = app.gymquest.core.sharing.SharedRoutine(1, "Pierna", "Ana", listOf(app.gymquest.core.sharing.SharedDay("Día 1", listOf(app.gymquest.core.sharing.SharedItem("pushup", 3, 8, 12, 60)))))
+        var s = Actions.saveRoutine(started(), a)
+        s = Actions.saveRoutine(s, a.copy(author = "Luis"))
+        assertEquals(1, s.savedRoutines.size)
+        assertEquals("Luis", s.savedRoutines.single().author)
+        // And it survives the saved-file round trip.
+        val back = json.decodeFromString(AppState.serializer(), json.encodeToString(AppState.serializer(), s))
+        assertEquals(s.savedRoutines, back.savedRoutines)
+        assertTrue(Actions.deleteRoutine(s, 0).savedRoutines.isEmpty())
+    }
 }

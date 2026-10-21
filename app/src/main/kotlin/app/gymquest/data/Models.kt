@@ -10,6 +10,7 @@ import app.gymquest.core.fitness.Sex
 import app.gymquest.core.fitness.UserProfile
 import app.gymquest.core.nutrition.MealType
 import app.gymquest.core.wellness.SkinType
+import app.gymquest.core.sharing.SharedRoutine
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.util.UUID
@@ -198,6 +199,7 @@ data class AppState(
     val activities: List<ActivityDto> = emptyList(),
     val reports: List<ReportDto> = emptyList(),
     val loops: List<LoopDto> = emptyList(),
+    val savedRoutines: List<SharedRoutine> = emptyList(),
 ) {
     fun day(epochDay: Long): DayLogDto = days[epochDay] ?: DayLogDto()
 }

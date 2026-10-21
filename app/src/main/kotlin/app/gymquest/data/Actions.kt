@@ -311,6 +311,14 @@ object Actions {
         return grantXp(s, xp, today)
     }
 
+    // ---- Routines received from friends -------------------------------------------------------
+
+    fun saveRoutine(state: AppState, routine: app.gymquest.core.sharing.SharedRoutine): AppState =
+        state.copy(savedRoutines = (state.savedRoutines.filter { it.name != routine.name } + routine).takeLast(30))
+
+    fun deleteRoutine(state: AppState, index: Int): AppState =
+        state.copy(savedRoutines = state.savedRoutines.filterIndexed { i, _ -> i != index })
+
     // ---- Community hazard reports (kept on the phone until a server can share them) -----------
 
     fun addReport(state: AppState, type: String, at: app.gymquest.core.tracking.GeoPoint, nowMs: Long): AppState {
