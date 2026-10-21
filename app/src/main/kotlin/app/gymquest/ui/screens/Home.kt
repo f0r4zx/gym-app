@@ -128,6 +128,17 @@ fun HomeScreen(state: AppState, c: Controller, open: (Sub) -> Unit, goTo: (Tab) 
             }
         }
 
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            GqCard(Modifier.weight(1f), onClick = { goTo(Tab.TRAIN) }) {
+                Text("📋 Mi plan", fontWeight = FontWeight.Bold)
+                Muted("Ejercicios para tu edad y tu meta")
+            }
+            GqCard(Modifier.weight(1f), onClick = { open(Sub.DIARY) }) {
+                Text("📅 Diario", fontWeight = FontWeight.Bold)
+                Muted("Tu calendario de entrenos")
+            }
+        }
+
         SectionTitle("¿Qué hacemos hoy?")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             GqCard(Modifier.weight(1f), onClick = { goTo(Tab.TRAIN) }) {

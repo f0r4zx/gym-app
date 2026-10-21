@@ -62,7 +62,14 @@ import kotlin.math.roundToInt
 fun TrainScreen(state: AppState, c: Controller) {
     var target by rememberSaveable { mutableStateOf<String?>(null) }
     val t = target
-    if (t == null) TrainMenu(state) { target = it } else TrainFlow(state, c, t) { target = null }
+    when {
+        t == null -> TrainMenu(state) { target = it }
+        t == "plan" -> {
+            BackHandler { target = null }
+            PlanScreen(state, c, onTrain = { target = it }, onBack = { target = null })
+        }
+        else -> TrainFlow(state, c, t) { target = null }
+    }
 }
 
 @Composable
@@ -74,6 +81,11 @@ private fun TrainMenu(state: AppState, onPick: (String) -> Unit) {
     ) {
         Text("Entrenar", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
         Muted("La cámara cuenta tus repeticiones y revisa tu postura. Funciona sin internet.")
+
+        GqCard(onClick = { onPick("plan") }) {
+            Text("📋 Mi plan y recomendaciones", fontWeight = FontWeight.Bold)
+            Muted("Los mejores ejercicios para tu edad y tu meta, y tu semana de entrenamiento")
+        }
 
         SectionTitle("⚔️ Jefes")
         Bosses.all.forEach { boss ->

@@ -33,6 +33,7 @@ import app.gymquest.data.Reward
 import app.gymquest.data.Result
 import app.gymquest.ui.screens.CharacterScreen
 import app.gymquest.ui.screens.CommunityScreen
+import app.gymquest.ui.screens.DiaryScreen
 import app.gymquest.ui.screens.HomeScreen
 import app.gymquest.ui.screens.LifeScreen
 import app.gymquest.ui.screens.MapScreen
@@ -84,7 +85,7 @@ enum class Tab(val label: String, val icon: String) {
     HOME("Inicio", "🏠"), TRAIN("Entrenar", "💪"), MAP("Mapa", "🗺️"), LIFE("Vida", "🌿"), COMMUNITY("Comunidad", "👥")
 }
 
-enum class Sub { CHARACTER, MISSIONS, SETTINGS }
+enum class Sub { CHARACTER, MISSIONS, SETTINGS, DIARY }
 
 @Composable
 fun AppRoot(repo: GymRepository) {
@@ -157,6 +158,7 @@ private fun MainShell(repo: GymRepository, state: AppState, today: LocalDate) {
                 Sub.CHARACTER -> CharacterScreen(state, controller) { subName = null }
                 Sub.MISSIONS -> MissionsScreen(state, controller) { subName = null }
                 Sub.SETTINGS -> SettingsScreen(state, controller) { subName = null }
+                Sub.DIARY -> DiaryScreen(state, controller) { subName = null }
                 null -> when (tab) {
                     Tab.HOME -> HomeScreen(state, controller, open = { subName = it.name }, goTo = { tabName = it.name })
                     Tab.TRAIN -> TrainScreen(state, controller)
