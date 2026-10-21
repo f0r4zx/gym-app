@@ -57,6 +57,7 @@ import app.gymquest.data.enumOr
 import app.gymquest.routing.PlannedRoute
 import app.gymquest.routing.RoutePlanning
 import app.gymquest.tracking.FinishedTrack
+import app.gymquest.tracking.TrackJournal
 import app.gymquest.tracking.TrackingService
 import app.gymquest.tracking.TrackingState
 import app.gymquest.ui.Controller
@@ -146,6 +147,9 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
 
     LaunchedEffect(Unit) { refreshLastKnown() }
 
+    // An activity that was cut short (app killed, battery died) can be recovered from its journal.
+    var recoverable by remember { mutableStateOf(!live.active && TrackJournal.exists(context)) }
+
     // Save a finished recording exactly once.
     LaunchedEffect(finished) {
         val f = finished ?: return@LaunchedEffect
@@ -199,6 +203,18 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
             when {
                 r != null -> ResultCard(r) { result = null }
                 live.active -> ActivePanel(live, tickMs)
+                recoverable -> GqCard {
+                    Text("Se interrumpió una actividad", fontWeight = FontWeight.Bold)
+                    Muted("La app se cerró mientras grababas. Puedo recuperar lo que se alcanzó a guardar.")
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PrimaryButton("Recuperar", {
+                            TrackJournal.recover(context)?.let { result = save(it, c) } ?: c.say("No había datos suficientes.")
+                            TrackJournal.discard(context)
+                            recoverable = false
+                        })
+                        OutlinedButton(onClick = { TrackJournal.discard(context); recoverable = false }) { Text("Descartar") }
+                    }
+                }
                 tripOpen -> Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
                     TripPanel(
                         state = state, c = c, position = position, travel = travel,

@@ -52,6 +52,7 @@ class TrackingService : Service() {
     private var cachedTrack: List<GeoPoint> = emptyList()
     private var lastNotifyMs = 0L
     private var wakeLock: PowerManager.WakeLock? = null
+    private var journal: TrackJournal? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -78,6 +79,7 @@ class TrackingService : Service() {
         val weight = intent.getDoubleExtra(EXTRA_WEIGHT, 70.0)
         recorder = ActivityRecorder(type, weight)
         startedAtMs = System.currentTimeMillis()
+        journal = TrackJournal(this).also { it.begin(type, weight, startedAtMs) }
 
         ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification("Buscando señal GPS…"), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
         wakeLock = getSystemService(PowerManager::class.java)
@@ -111,16 +113,16 @@ class TrackingService : Service() {
 
     private fun onFix(loc: Location) {
         val rec = recorder ?: return
-        rec.add(
-            TrackPoint(
-                timeMs = loc.time,
-                lat = loc.latitude,
-                lon = loc.longitude,
-                altitudeM = if (loc.hasAltitude()) loc.altitude else null,
-                accuracyM = if (loc.hasAccuracy()) loc.accuracy.toDouble() else 20.0,
-                speedMps = if (loc.hasSpeed()) loc.speed.toDouble() else null,
-            ),
+        val point = TrackPoint(
+            timeMs = loc.time,
+            lat = loc.latitude,
+            lon = loc.longitude,
+            altitudeM = if (loc.hasAltitude()) loc.altitude else null,
+            accuracyM = if (loc.hasAccuracy()) loc.accuracy.toDouble() else 20.0,
+            speedMps = if (loc.hasSpeed()) loc.speed.toDouble() else null,
         )
+        journal?.add(point)
+        rec.add(point)
         val now = System.currentTimeMillis()
         // Copying the whole track at every fix would waste memory; every 2 s is plenty for drawing.
         if (now - lastTrackCopyMs >= TRACK_COPY_MS || cachedTrack.isEmpty()) {
@@ -175,6 +177,8 @@ class TrackingService : Service() {
             TrackingState.publish(LiveTrack())
         }
         recorder = null
+        journal?.clear()
+        journal = null
         wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
