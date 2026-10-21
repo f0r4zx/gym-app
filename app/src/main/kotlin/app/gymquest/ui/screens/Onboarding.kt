@@ -80,7 +80,7 @@ fun OnboardingScreen(today: LocalDate, initial: ProfileDto? = null, onDone: (Pro
     val weightN = weight.toDoubleOrNull()
     val targetN = target.toDoubleOrNull()
     val valid = when (step) {
-        0 -> name.isNotBlank() && ageN != null && ageN in 10..100
+        0 -> name.isNotBlank() && ageN != null && ageN in 13..100
         1 -> heightN != null && heightN in 100.0..250.0 && weightN != null && weightN in 25.0..350.0
         else -> true
     }
@@ -116,6 +116,7 @@ fun OnboardingScreen(today: LocalDate, initial: ProfileDto? = null, onDone: (Pro
                     if (initial == null) Title("¡Bienvenido a GymQuest!", "Convierte cada repetición, cada paso y cada vaso de agua en experiencia. Cuéntame de ti para armar tu plan.") else Title("Editar mi perfil", "Cambia lo que necesites; se recalculan tus calorías, agua y recomendaciones.")
                     OutlinedTextField(name, { name = it.take(24) }, label = { Text("Tu nombre o apodo") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     NumberField(age, { age = it }, "Edad", suffix = "años", decimals = false, modifier = Modifier.fillMaxWidth())
+                    if (ageN != null && ageN < 13) Muted("GymQuest es para personas de 13 años o más. Si tienes menos, pide a un adulto que te acompañe con tu entrenamiento.")
                     Text("Sexo (para calcular tu metabolismo)", fontWeight = FontWeight.SemiBold)
                     ChoiceChips(Sex.entries, enumOr(sex, Sex.OTHER), { it.label }, { sex = it.name })
                 }
