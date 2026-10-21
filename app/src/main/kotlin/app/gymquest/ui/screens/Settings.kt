@@ -94,6 +94,20 @@ fun SettingsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
             ChoiceChips(VISIBILITY, VISIBILITY.firstOrNull { it.first == s.statsVisibility } ?: VISIBILITY[1], { it.second }, { v -> c.change { it.copy(settings = it.settings.copy(statsVisibility = v.first)) } })
         }
 
+        SectionTitle("Ayuda rápida")
+        GqCard {
+            Text("📷 Para que cuente bien", fontWeight = FontWeight.Bold)
+            Muted("Apoya el teléfono a 2–3 metros, a la altura de tu cintura, y deja que se te vea el cuerpo completo. Con buena luz y sin nada tapando las articulaciones. Puede estar inclinado: se corrige solo. Si no cuenta, la pantalla te dice qué mover.")
+            Text("🎧 Entrenador de voz", fontWeight = FontWeight.Bold)
+            Muted("Usa audífonos y sube el volumen. Si tienes música sonando, baja sola mientras él habla. Puedes silenciarlo arriba en \"Voz del entrenador\".")
+            Text("🗺️ Mapas sin internet", fontWeight = FontWeight.Bold)
+            Muted("Antes de salir, en Mapa → \"Sin internet\", descarga tu zona. El GPS funciona siempre; el mapa solo se ve sin conexión donde lo descargaste.")
+            Text("🔋 Batería", fontWeight = FontWeight.Bold)
+            Muted("La app baja sola la calidad de la cámara si el teléfono se calienta o la batería está baja. Para actividades largas con GPS, deja la pantalla apagada: sigue grabando.")
+            Text("🔒 Privacidad", fontWeight = FontWeight.Bold)
+            Muted("Tus datos, fotos y música se quedan en tu teléfono. Nada se sube hasta que conectes un servidor, y tú eliges quién ve tu racha y tus estadísticas.")
+        }
+
         SectionTitle("Acerca de")
         GqCard {
             Text("GymQuest 0.1", fontWeight = FontWeight.Bold)
