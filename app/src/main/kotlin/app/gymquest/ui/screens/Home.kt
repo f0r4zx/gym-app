@@ -139,6 +139,11 @@ fun HomeScreen(state: AppState, c: Controller, open: (Sub) -> Unit, goTo: (Tab) 
             }
         }
 
+        GqCard(onClick = { open(Sub.PROGRESS) }) {
+            Text("📈 Mi progreso", fontWeight = FontWeight.Bold)
+            Muted("Peso, actividad por semana y tus totales")
+        }
+
         SectionTitle("¿Qué hacemos hoy?")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             GqCard(Modifier.weight(1f), onClick = { goTo(Tab.TRAIN) }) {

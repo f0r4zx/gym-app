@@ -39,6 +39,7 @@ import app.gymquest.ui.screens.LifeScreen
 import app.gymquest.ui.screens.MapScreen
 import app.gymquest.ui.screens.MissionsScreen
 import app.gymquest.ui.screens.OnboardingScreen
+import app.gymquest.ui.screens.ProgressScreen
 import app.gymquest.ui.screens.SettingsScreen
 import app.gymquest.ui.screens.TrainScreen
 import kotlinx.coroutines.channels.Channel
@@ -85,7 +86,7 @@ enum class Tab(val label: String, val icon: String) {
     HOME("Inicio", "🏠"), TRAIN("Entrenar", "💪"), MAP("Mapa", "🗺️"), LIFE("Vida", "🌿"), COMMUNITY("Comunidad", "👥")
 }
 
-enum class Sub { CHARACTER, MISSIONS, SETTINGS, DIARY }
+enum class Sub { CHARACTER, MISSIONS, SETTINGS, DIARY, PROGRESS }
 
 @Composable
 fun AppRoot(repo: GymRepository) {
@@ -160,6 +161,7 @@ private fun MainShell(repo: GymRepository, state: AppState, today: LocalDate) {
                 Sub.MISSIONS -> MissionsScreen(state, controller) { subName = null }
                 Sub.SETTINGS -> SettingsScreen(state, controller) { subName = null }
                 Sub.DIARY -> DiaryScreen(state, controller) { subName = null }
+                Sub.PROGRESS -> ProgressScreen(state, controller) { subName = null }
                 null -> when (tab) {
                     Tab.HOME -> HomeScreen(state, controller, open = { subName = it.name }, goTo = { tabName = it.name })
                     Tab.TRAIN -> TrainScreen(state, controller)
