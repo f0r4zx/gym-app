@@ -242,13 +242,14 @@ object Actions {
         return Result(granted.state, reward + granted.reward)
     }
 
-    fun finishActivity(state: AppState, dto: ActivityDto, activity: ActivityType, today: LocalDate): Result {
+    fun finishActivity(state: AppState, dto: ActivityDto, activity: ActivityType, today: LocalDate, loops: List<LoopDto> = emptyList()): Result {
         val km = dto.distanceM / 1000.0
         val key = today.toEpochDay()
         val day = state.day(key)
         var s = markActive(state, today)
         s = s.copy(
             activities = (s.activities + dto).takeLast(400),
+            loops = (s.loops + loops).takeLast(120),
             days = s.days + (key to day.copy(activeMinutes = day.activeMinutes + (dto.movingMs / 60_000).toInt())),
             game = s.game.copy(
                 totalKm = s.game.totalKm + km,

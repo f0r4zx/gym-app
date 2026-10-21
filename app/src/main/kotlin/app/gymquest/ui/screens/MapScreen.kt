@@ -48,7 +48,9 @@ import app.gymquest.core.tracking.Formats
 import app.gymquest.core.tracking.GeoPoint
 import app.gymquest.core.tracking.RecorderState
 import app.gymquest.data.Actions
+import app.gymquest.core.tracking.Polyline
 import app.gymquest.data.ActivityDto
+import app.gymquest.data.LoopDto
 import app.gymquest.data.AppState
 import app.gymquest.data.Reward
 import app.gymquest.data.enumOr
@@ -160,6 +162,7 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
 
     val position = live.lastPoint ?: lastKnown
     val reportPoints = remember(state.reports) { state.reports.map { GeoPoint(it.lat, it.lon) } }
+    val territory = remember(state.loops) { state.loops.map { Polyline.decode(it.polyline) } }
     // Only move the camera when a new position arrives, not on every one-second clock tick.
     val camera: CameraState? = remember(live.active, live.lastPoint, lastKnown) {
         val p = live.lastPoint
@@ -182,6 +185,7 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
             routeVersion = routeVersion,
             destination = dest,
             reports = reportPoints,
+            territory = territory,
             onLongPress = { p ->
                 if (!live.active) {
                     tripOpen = true
@@ -233,18 +237,20 @@ private fun save(f: FinishedTrack, c: Controller): ActivityResultInfo? {
     }
     var cells = 0
     var loops = 0
+    var conquered = emptyList<LoopDto>()
     val verdict = ClaimValidator.check(s.type, s.avgSpeedMps, s.movingMs, claimsToday = 0)
     if (verdict == ClaimValidator.Verdict.OK) {
         val found = LoopDetector.find(f.track)
         loops = found.size
         cells = found.flatMap { TerritoryGrid.cellsInside(it.polygon) }.distinct().size
+        conquered = found.map { LoopDto(Polyline.encode(it.polygon), it.areaM2, f.startedAtMs) }
     }
     val dto = ActivityDto(
         id = UUID.randomUUID().toString(), timeMs = f.startedAtMs, type = s.type.name, distanceM = s.distanceM,
         movingMs = s.movingMs, elapsedMs = s.elapsedMs, gainM = s.elevationGainM, lossM = s.elevationLossM,
         calories = s.calories, polyline = f.polyline, cellsCaptured = cells,
     )
-    val reward = c.act { Actions.finishActivity(it, dto, s.type, c.today) }
+    val reward = c.act { Actions.finishActivity(it, dto, s.type, c.today, conquered) }
     return ActivityResultInfo(dto, s.type, reward, loops)
 }
 

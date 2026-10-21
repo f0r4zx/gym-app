@@ -25,6 +25,7 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.FillLayer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
@@ -32,6 +33,7 @@ import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.LineString
+import org.maplibre.geojson.Polygon
 import org.maplibre.geojson.Point
 
 private const val TRACK_SOURCE = "gq-track"
@@ -39,6 +41,7 @@ private const val ME_SOURCE = "gq-me"
 private const val ROUTE_SOURCE = "gq-route"
 private const val DEST_SOURCE = "gq-dest"
 private const val REPORTS_SOURCE = "gq-reports"
+private const val TERRITORY_SOURCE = "gq-territory"
 
 /**
  * An interactive map (vector tiles, tilt for 3D buildings) that draws the recorded route and a dot
@@ -56,6 +59,7 @@ fun GymMap(
     routeVersion: Int = 0,
     destination: GeoPoint? = null,
     reports: List<GeoPoint> = emptyList(),
+    territory: List<List<GeoPoint>> = emptyList(),
     onLongPress: (GeoPoint) -> Unit = {},
     onReady: (MapLibreMap) -> Unit = {},
 ) {
@@ -108,6 +112,18 @@ fun GymMap(
                 true
             }
             m.setStyle(Style.Builder().fromUri(styleUrl)) { s ->
+                // Conquered land (bottom layer)
+                s.addSource(GeoJsonSource(TERRITORY_SOURCE, FeatureCollection.fromFeatures(emptyList<Feature>())))
+                s.addLayer(
+                    FillLayer("gq-territory-fill", TERRITORY_SOURCE).withProperties(
+                        PropertyFactory.fillColor("#3DDC97"), PropertyFactory.fillOpacity(0.28f),
+                    ),
+                )
+                s.addLayer(
+                    LineLayer("gq-territory-edge", TERRITORY_SOURCE).withProperties(
+                        PropertyFactory.lineColor("#3DDC97"), PropertyFactory.lineWidth(2f),
+                    ),
+                )
                 // Planned route (under the recorded track)
                 s.addSource(GeoJsonSource(ROUTE_SOURCE, FeatureCollection.fromFeatures(emptyList<Feature>())))
                 s.addLayer(
@@ -164,6 +180,15 @@ fun GymMap(
         } else {
             source.setGeoJson(FeatureCollection.fromFeatures(emptyList<Feature>()))
         }
+    }
+
+    LaunchedEffect(style, territory) {
+        val st = style ?: return@LaunchedEffect
+        val features = territory.filter { it.size >= 3 }.map { ring ->
+            val pts = ring.map { Point.fromLngLat(it.lon, it.lat) }
+            Feature.fromGeometry(Polygon.fromLngLats(listOf(pts + pts.first())))
+        }
+        st.getSourceAs<GeoJsonSource>(TERRITORY_SOURCE)?.setGeoJson(FeatureCollection.fromFeatures(features))
     }
 
     // Planned route, destination and reports: redrawn only when they change.

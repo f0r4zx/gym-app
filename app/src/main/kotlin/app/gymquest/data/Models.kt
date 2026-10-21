@@ -118,6 +118,10 @@ data class ActivityDto(
     val cellsCaptured: Int = 0,
 )
 
+/** A closed circuit you ran or walked: the land you conquered. Stored as an encoded polygon. */
+@Serializable
+data class LoopDto(val polyline: String, val areaM2: Double, val timeMs: Long)
+
 @Serializable
 data class ReportDto(val id: String, val type: String, val lat: Double, val lon: Double, val createdMs: Long)
 
@@ -190,6 +194,7 @@ data class AppState(
     val workouts: List<WorkoutDto> = emptyList(),
     val activities: List<ActivityDto> = emptyList(),
     val reports: List<ReportDto> = emptyList(),
+    val loops: List<LoopDto> = emptyList(),
 ) {
     fun day(epochDay: Long): DayLogDto = days[epochDay] ?: DayLogDto()
 }
