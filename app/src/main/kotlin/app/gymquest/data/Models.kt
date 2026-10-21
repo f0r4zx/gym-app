@@ -138,7 +138,11 @@ data class SettingsDto(
     val skinTone: String = "TONE_3",
     val hairStyle: String = "SHORT",
     val hairColor: Int = 0x2B1B12,
+    val mapStyle: String = DEFAULT_MAP_STYLE,
 )
+
+/** A free vector-tile style with 3D buildings and no API key. Can be changed in Settings. */
+const val DEFAULT_MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty"
 
 @Serializable
 data class GameDto(

@@ -31,9 +31,5 @@ private fun ComingSoon(title: String, emoji: String, lines: List<String>) {
 }
 
 @Composable
-fun MapScreen(state: AppState, c: Controller) =
-    ComingSoon("Mapa", "🗺️", listOf("GPS para caminar, correr o pedalear", "Mapas 3D y descargas sin internet", "Conquista territorio cerrando circuitos"))
-
-@Composable
 fun CommunityScreen(state: AppState, c: Controller) =
     ComingSoon("Comunidad", "👥", listOf("Amigos, gremios y rankings", "Duelos y guerras", "Mercado y chat"))

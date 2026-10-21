@@ -64,10 +64,11 @@ class PoseAnalyzer(
         for (p in all) {
             val i = p.landmarkType
             if (i !in 0 until Joint.COUNT) continue
-            val pos = p.position3D
+            val pos = p.position
             var x = (pos.x / width).toDouble()
             if (mirror) x = 1.0 - x
-            byType[i] = Landmark(x, (pos.y / height).toDouble(), (pos.z / width).toDouble(), p.inFrameLikelihood.toDouble())
+            // Depth is not used by the counters (they work from 2D angles), so it is left at zero.
+            byType[i] = Landmark(x, (pos.y / height).toDouble(), 0.0, p.inFrameLikelihood.toDouble())
         }
         return PoseFrame(nowMs, byType.toList(), aspect = width.toDouble() / height)
     }

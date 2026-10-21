@@ -43,5 +43,10 @@
                 <data android:scheme="gymquest" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".tracking.TrackingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
     </application>
 </manifest>
