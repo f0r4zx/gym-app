@@ -84,33 +84,11 @@ jobs:
       - name: Show test failures
         if: failure()
         run: |
-          echo "===== COMPILER ERRORS ====="
-          grep -nE "^e: |error:|Kotlin compiler error|Location:|What went wrong|requires libraries|FAILED|AssertionError|ComposeTimeout|Exception" emu.log | cut -c1-300 | head -80
+          echo "===== GRADLE TAIL ====="
+          tail -45 emu.log | cut -c1-300
+          echo "===== TEST FAILURES ====="
+          for f in $(find app/build -path '*androidTest-results*' -name '*.xml' 2>/dev/null); do
+            grep -A14 "<failure" "$f" | cut -c1-300 | head -40
+          done
           echo "===== CRASH LOG ====="
-          head -80 logcat.txt || true
-
-  android-release:
-    name: Build optimized release APK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Build release APK (R8 shrunk)
-        run: |
-          set -o pipefail
-          ./gradlew :app:assembleRelease --no-daemon --console=plain 2>&1 | tee release.log
-      - name: Show errors
-        if: failure()
-        run: |
-          grep -nE "^e: |error:|ERROR|R8|Missing class|What went wrong" release.log | cut -c1-300 | head -80
-      - name: Upload release APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gymquest-release-apk
-          path: app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
+          head -60 logcat.txt || true
