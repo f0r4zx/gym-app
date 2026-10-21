@@ -73,6 +73,7 @@ internal fun FoodPanel(state: AppState, c: Controller) {
 
     SectionTitle("Agregar comida")
     ChoiceChips(MealType.entries, meal, { it.label }, { mealName = it.name })
+    FoodPhoto(profile.diet) { m -> c.act { Actions.logFood(it, entryFor(m.food, m.grams.toDouble(), meal), c.today) } }
     OutlinedTextField(
         value = query,
         onValueChange = { query = it; pickedId = null },
