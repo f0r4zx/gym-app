@@ -40,15 +40,15 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build debug APK
+      - name: Build debug APK and run app unit tests
         run: |
           set -o pipefail
-          ./gradlew :app:assembleDebug --no-daemon --console=plain 2>&1 | tee build.log
+          ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon --console=plain 2>&1 | tee build.log
       - name: Show compile errors
         if: failure()
         run: |
           echo "===== COMPILER ERRORS ====="
-          grep -nE "^e: |error:|Kotlin compiler error|Location:|What went wrong|requires libraries|Dependency '" build.log | cut -c1-300 | head -120
+          grep -nE "^e: |error:|Kotlin compiler error|Location:|What went wrong|requires libraries|Dependency '|FAILED|AssertionError|expected:" build.log | cut -c1-300 | head -120
       - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
