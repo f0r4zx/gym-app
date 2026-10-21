@@ -274,6 +274,17 @@ object Actions {
         return grantXp(s, xp, today)
     }
 
+    // ---- Community hazard reports (kept on the phone until a server can share them) -----------
+
+    fun addReport(state: AppState, type: String, at: app.gymquest.core.tracking.GeoPoint, nowMs: Long): AppState {
+        val live = state.reports.filter { r ->
+            val ttl = runCatching { app.gymquest.core.routes.ReportType.valueOf(r.type).ttlMs }.getOrDefault(3_600_000L)
+            nowMs - r.createdMs < ttl
+        }
+        val report = ReportDto(java.util.UUID.randomUUID().toString(), type, at.lat, at.lon, nowMs)
+        return state.copy(reports = (live + report).takeLast(200))
+    }
+
     // ---- Missions ---------------------------------------------------------------------------
 
     fun claimMission(state: AppState, missionId: String, today: LocalDate): Result {

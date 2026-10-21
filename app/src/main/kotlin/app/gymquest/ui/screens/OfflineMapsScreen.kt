@@ -27,6 +27,7 @@ import app.gymquest.core.tracking.GeoPoint
 import app.gymquest.core.tracking.MapDetail
 import app.gymquest.core.tracking.OfflineMapPlanner
 import app.gymquest.data.AppState
+import app.gymquest.map.OfflineDownloader
 import app.gymquest.ui.Controller
 import app.gymquest.ui.components.Bar
 import app.gymquest.ui.components.ChoiceChips
@@ -125,47 +126,19 @@ fun OfflineMapsScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                     "Descargar esta zona",
                     onClick = {
                         val pl = plan ?: return@PrimaryButton
-                        val bounds = LatLngBounds.Builder()
-                            .include(LatLng(pl.bounds.south, pl.bounds.west))
-                            .include(LatLng(pl.bounds.north, pl.bounds.east))
-                            .build()
-                        val definition = OfflineTilePyramidRegionDefinition(
-                            state.settings.mapStyle, bounds, pl.minZoom.toDouble(), pl.maxZoom.toDouble(), context.resources.displayMetrics.density,
-                        )
-                        val label = "Zona ${regions.size + 1} · ${radiusKm.coerceAtMost(maxKm)} km"
                         progress = 0.0
-                        manager.createOfflineRegion(
-                            definition, label.toByteArray(),
-                            object : OfflineManager.CreateOfflineRegionCallback {
-                                override fun onCreate(offlineRegion: OfflineRegion) {
-                                    offlineRegion.setObserver(object : OfflineRegion.OfflineRegionObserver {
-                                        override fun onStatusChanged(status: OfflineRegionStatus) {
-                                            val required = status.requiredResourceCount.coerceAtLeast(1)
-                                            progress = status.completedResourceCount.toDouble() / required
-                                            if (status.isComplete) {
-                                                offlineRegion.setDownloadState(OfflineRegion.STATE_INACTIVE)
-                                                progress = null
-                                                c.say("Mapa descargado ✓")
-                                                refresh()
-                                            }
-                                        }
-
-                                        override fun onError(error: OfflineRegionError) {
-                                            statusText = "${error.reason}: ${error.message}"
-                                        }
-
-                                        override fun mapboxTileCountLimitExceeded(limit: Long) {
-                                            statusText = "Demasiadas teselas (límite $limit)."
-                                            progress = null
-                                        }
-                                    })
-                                    offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE)
-                                }
-
-                                override fun onError(error: String) {
-                                    progress = null
-                                    statusText = error
-                                }
+                        OfflineDownloader.start(
+                            context, state.settings.mapStyle, pl.bounds, pl.minZoom, pl.maxZoom,
+                            "Zona ${regions.size + 1} · ${radiusKm.coerceAtMost(maxKm)} km",
+                            onProgress = { progress = it },
+                            onDone = {
+                                progress = null
+                                c.say("Mapa descargado ✓")
+                                refresh()
+                            },
+                            onError = {
+                                progress = null
+                                statusText = it
                             },
                         )
                     },

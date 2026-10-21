@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.gymquest.core.routes.TravelMode
 import app.gymquest.core.territory.ClaimValidator
 import app.gymquest.core.territory.LoopDetector
 import app.gymquest.core.territory.TerritoryGrid
@@ -48,6 +52,8 @@ import app.gymquest.data.ActivityDto
 import app.gymquest.data.AppState
 import app.gymquest.data.Reward
 import app.gymquest.data.enumOr
+import app.gymquest.routing.PlannedRoute
+import app.gymquest.routing.RoutePlanning
 import app.gymquest.tracking.FinishedTrack
 import app.gymquest.tracking.TrackingService
 import app.gymquest.tracking.TrackingState
@@ -59,6 +65,7 @@ import app.gymquest.ui.components.Muted
 import app.gymquest.ui.components.PrimaryButton
 import app.gymquest.ui.theme.Gold
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 private class ActivityResultInfo(val dto: ActivityDto, val type: ActivityType, val reward: Reward, val loops: Int)
@@ -84,6 +91,14 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
     var lastKnown by remember { mutableStateOf<GeoPoint?>(null) }
     var result by remember { mutableStateOf<ActivityResultInfo?>(null) }
     val follow = remember { FollowCamera() }
+    val scope = rememberCoroutineScope()
+    var tripOpen by rememberSaveable { mutableStateOf(false) }
+    var travelName by rememberSaveable { mutableStateOf(TravelMode.BIKE.name) }
+    var dest by remember { mutableStateOf<app.gymquest.core.tracking.GeoPoint?>(null) }
+    var planned by remember { mutableStateOf<PlannedRoute?>(null) }
+    var planning by remember { mutableStateOf(false) }
+    var routeVersion by remember { mutableIntStateOf(0) }
+    val travel = enumOr(travelName, TravelMode.BIKE)
     val activityType = enumOr(type, ActivityType.WALK)
 
     fun hasLocation() = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -93,6 +108,26 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
         LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener { loc ->
             if (loc != null) lastKnown = GeoPoint(loc.latitude, loc.longitude)
         }
+    }
+
+    fun planTo(point: GeoPoint, mode: TravelMode = travel) {
+        val from = live.lastPoint ?: lastKnown
+        if (from == null) {
+            c.say("Aún no tengo tu ubicación: activa el GPS y espera un momento.")
+            return
+        }
+        dest = point
+        planning = true
+        scope.launch {
+            planned = RoutePlanning.route(mode, from, point)
+            routeVersion++
+            planning = false
+        }
+    }
+    fun clearTrip() {
+        dest = null
+        planned = null
+        routeVersion++
     }
 
     val startRecording = {
@@ -124,6 +159,7 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
     }
 
     val position = live.lastPoint ?: lastKnown
+    val reportPoints = remember(state.reports) { state.reports.map { GeoPoint(it.lat, it.lon) } }
     // Only move the camera when a new position arrives, not on every one-second clock tick.
     val camera: CameraState? = remember(live.active, live.lastPoint, lastKnown) {
         val p = live.lastPoint
@@ -142,6 +178,16 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
             position = position,
             camera = camera,
             modifier = Modifier.fillMaxSize(),
+            route = planned?.points.orEmpty(),
+            routeVersion = routeVersion,
+            destination = dest,
+            reports = reportPoints,
+            onLongPress = { p ->
+                if (!live.active) {
+                    tripOpen = true
+                    planTo(p)
+                }
+            },
         )
 
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -149,6 +195,19 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
             when {
                 r != null -> ResultCard(r) { result = null }
                 live.active -> ActivePanel(live, tickMs)
+                tripOpen -> Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                    TripPanel(
+                        state = state, c = c, position = position, travel = travel,
+                        onTravel = { m ->
+                            travelName = m.name
+                            dest?.let { planTo(it, m) }
+                        },
+                        planned = planned, busy = planning,
+                        onDestination = { planTo(it) },
+                        onClear = { clearTrip() },
+                        onClose = { tripOpen = false },
+                    )
+                }
                 else -> IdlePanel(
                     state = state,
                     selected = activityType,
@@ -158,6 +217,7 @@ private fun LiveMap(state: AppState, c: Controller, openOffline: () -> Unit) {
                         else permissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.POST_NOTIFICATIONS))
                     },
                     onOffline = openOffline,
+                    onTrip = { tripOpen = true },
                 )
             }
         }
@@ -189,13 +249,21 @@ private fun save(f: FinishedTrack, c: Controller): ActivityResultInfo? {
 }
 
 @Composable
-private fun IdlePanel(state: AppState, selected: ActivityType, onSelect: (ActivityType) -> Unit, onStart: () -> Unit, onOffline: () -> Unit) {
+private fun IdlePanel(
+    state: AppState,
+    selected: ActivityType,
+    onSelect: (ActivityType) -> Unit,
+    onStart: () -> Unit,
+    onOffline: () -> Unit,
+    onTrip: () -> Unit,
+) {
     GqCard {
         Text("¿Qué vas a hacer?", fontWeight = FontWeight.Bold)
         ChoiceChips(ActivityType.entries, selected, { it.label }, onSelect)
         PrimaryButton("▶ Empezar", onStart, Modifier.fillMaxWidth())
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onOffline) { Text("📥 Mapas sin internet") }
+            OutlinedButton(onClick = onTrip) { Text("🧭 Destino") }
+            OutlinedButton(onClick = onOffline) { Text("📥 Sin internet") }
             val km = state.activities.sumOf { it.distanceM } / 1000.0
             Muted("Total: ${"%.1f".format(km)} km")
         }

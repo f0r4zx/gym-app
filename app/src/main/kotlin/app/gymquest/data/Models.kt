@@ -119,6 +119,9 @@ data class ActivityDto(
 )
 
 @Serializable
+data class ReportDto(val id: String, val type: String, val lat: Double, val lon: Double, val createdMs: Long)
+
+@Serializable
 data class OfflineRegionDto(val name: String, val south: Double, val west: Double, val north: Double, val east: Double, val minZoom: Int, val maxZoom: Int, val bytes: Long)
 
 @Serializable
@@ -186,6 +189,7 @@ data class AppState(
     val weights: List<WeightDto> = emptyList(),
     val workouts: List<WorkoutDto> = emptyList(),
     val activities: List<ActivityDto> = emptyList(),
+    val reports: List<ReportDto> = emptyList(),
 ) {
     fun day(epochDay: Long): DayLogDto = days[epochDay] ?: DayLogDto()
 }

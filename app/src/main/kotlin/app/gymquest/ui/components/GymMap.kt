@@ -5,6 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
@@ -34,6 +36,9 @@ import org.maplibre.geojson.Point
 
 private const val TRACK_SOURCE = "gq-track"
 private const val ME_SOURCE = "gq-me"
+private const val ROUTE_SOURCE = "gq-route"
+private const val DEST_SOURCE = "gq-dest"
+private const val REPORTS_SOURCE = "gq-reports"
 
 /**
  * An interactive map (vector tiles, tilt for 3D buildings) that draws the recorded route and a dot
@@ -47,8 +52,14 @@ fun GymMap(
     position: GeoPoint?,
     camera: CameraState?,
     modifier: Modifier = Modifier,
+    route: List<GeoPoint> = emptyList(),
+    routeVersion: Int = 0,
+    destination: GeoPoint? = null,
+    reports: List<GeoPoint> = emptyList(),
+    onLongPress: (GeoPoint) -> Unit = {},
     onReady: (MapLibreMap) -> Unit = {},
 ) {
+    val longPress by rememberUpdatedState(onLongPress)
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val mapView = remember {
@@ -92,7 +103,33 @@ fun GymMap(
             onReady(m)
             m.uiSettings.isLogoEnabled = false
             m.uiSettings.isAttributionEnabled = true
+            m.addOnMapLongClickListener { p ->
+                longPress(GeoPoint(p.latitude, p.longitude))
+                true
+            }
             m.setStyle(Style.Builder().fromUri(styleUrl)) { s ->
+                // Planned route (under the recorded track)
+                s.addSource(GeoJsonSource(ROUTE_SOURCE, FeatureCollection.fromFeatures(emptyList<Feature>())))
+                s.addLayer(
+                    LineLayer("gq-route-line", ROUTE_SOURCE).withProperties(
+                        PropertyFactory.lineColor("#4DA3FF"), PropertyFactory.lineWidth(6f), PropertyFactory.lineOpacity(0.85f),
+                        PropertyFactory.lineCap(Property.LINE_CAP_ROUND), PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+                    ),
+                )
+                s.addSource(GeoJsonSource(REPORTS_SOURCE, FeatureCollection.fromFeatures(emptyList<Feature>())))
+                s.addLayer(
+                    CircleLayer("gq-reports-dot", REPORTS_SOURCE).withProperties(
+                        PropertyFactory.circleRadius(7f), PropertyFactory.circleColor("#FFC53D"),
+                        PropertyFactory.circleStrokeColor("#7A4B00"), PropertyFactory.circleStrokeWidth(2f),
+                    ),
+                )
+                s.addSource(GeoJsonSource(DEST_SOURCE, FeatureCollection.fromFeatures(emptyList<Feature>())))
+                s.addLayer(
+                    CircleLayer("gq-dest-dot", DEST_SOURCE).withProperties(
+                        PropertyFactory.circleRadius(10f), PropertyFactory.circleColor("#FF5C5C"),
+                        PropertyFactory.circleStrokeColor("#FFFFFF"), PropertyFactory.circleStrokeWidth(3f),
+                    ),
+                )
                 s.addSource(GeoJsonSource(TRACK_SOURCE, FeatureCollection.fromFeatures(emptyList<Feature>())))
                 s.addLayer(
                     LineLayer("gq-track-casing", TRACK_SOURCE).withProperties(
@@ -126,6 +163,30 @@ fun GymMap(
             source.setGeoJson(Feature.fromGeometry(LineString.fromLngLats(track.map { Point.fromLngLat(it.lon, it.lat) })))
         } else {
             source.setGeoJson(FeatureCollection.fromFeatures(emptyList<Feature>()))
+        }
+    }
+
+    // Planned route, destination and reports: redrawn only when they change.
+    LaunchedEffect(style, routeVersion, destination, reports) {
+        val st = style ?: return@LaunchedEffect
+        st.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)?.setGeoJson(
+            if (route.size >= 2) Feature.fromGeometry(LineString.fromLngLats(route.map { Point.fromLngLat(it.lon, it.lat) }))
+            else FeatureCollection.fromFeatures(emptyList<Feature>()),
+        )
+        st.getSourceAs<GeoJsonSource>(DEST_SOURCE)?.setGeoJson(
+            destination?.let { Feature.fromGeometry(Point.fromLngLat(it.lon, it.lat)) } ?: FeatureCollection.fromFeatures(emptyList<Feature>()),
+        )
+        st.getSourceAs<GeoJsonSource>(REPORTS_SOURCE)?.setGeoJson(
+            FeatureCollection.fromFeatures(reports.map { Feature.fromGeometry(Point.fromLngLat(it.lon, it.lat)) }),
+        )
+    }
+
+    // Show the whole route once when a new one arrives (not on every redraw).
+    LaunchedEffect(style, routeVersion) {
+        val m = map ?: return@LaunchedEffect
+        if (style != null && route.size >= 2) {
+            val bounds = LatLngBounds.Builder().apply { route.forEach { include(LatLng(it.lat, it.lon)) } }.build()
+            m.easeCamera(CameraUpdateFactory.newLatLngBounds(bounds, 120), 900)
         }
     }
 
