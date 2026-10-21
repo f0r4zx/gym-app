@@ -44,7 +44,7 @@ class Controller(
     val today: LocalDate,
     private val messages: Channel<String>,
 ) {
-    fun act(block: (AppState) -> Result) {
+    fun act(block: (AppState) -> Result): Reward {
         var reward = Reward.NONE
         repo.update { s ->
             val r = block(s)
@@ -52,6 +52,7 @@ class Controller(
             r.state
         }
         announce(reward)
+        return reward
     }
 
     fun change(block: (AppState) -> AppState) = repo.update(block)

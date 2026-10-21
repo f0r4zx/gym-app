@@ -150,10 +150,15 @@ fun OnboardingScreen(today: LocalDate, onDone: (ProfileDto) -> Unit) {
                     Title("Equipo y comida", "Solo te sugiero ejercicios y platillos que sí puedas hacer y comer.")
                     Text("Equipo disponible", fontWeight = FontWeight.SemiBold)
                     val owned = equipment.split(',').filter { it.isNotBlank() }.toSet()
-                    MultiChips(Equipment.entries, owned.mapNotNull { runCatching { Equipment.valueOf(it) }.getOrNull() }.toSet(), { it.label }) { e ->
-                        val next = if (e.name in owned) owned - e.name else owned + e.name
-                        equipment = next.ifEmpty { setOf(Equipment.BODYWEIGHT.name) }.joinToString(",")
-                    }
+                    MultiChips(
+                        options = Equipment.entries,
+                        selected = owned.mapNotNull { runCatching { Equipment.valueOf(it) }.getOrNull() }.toSet(),
+                        label = { it.label },
+                        onToggle = { e ->
+                            val next = if (e.name in owned) owned - e.name else owned + e.name
+                            equipment = next.ifEmpty { setOf(Equipment.BODYWEIGHT.name) }.joinToString(",")
+                        },
+                    )
                     Text("Tipo de dieta", fontWeight = FontWeight.SemiBold)
                     ChoiceChips(DietStyle.entries, enumOr(diet, DietStyle.OMNIVORE), { it.label }, { diet = it.name })
                     SwitchRow("Sin gluten", gluten) { gluten = it }
