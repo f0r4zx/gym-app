@@ -176,4 +176,48 @@ class ActionsTest {
         val again = Actions.claimWeekly(first.state, done.mission.id, today)
         assertEquals(first.state.game.xp, again.state.game.xp)
     }
+
+    @Test
+    fun editingTheProfileKeepsProgressAndResetsTheEditFlag() {
+        var s = Actions.finishSet(started(), ExerciseType.SQUAT, 12, 0.9, 40_000, 1_000L, today).state
+        s = Actions.startProfileEdit(s)
+        assertTrue(s.settings.editProfile)
+        val edited = profile().copy(weightKg = 58.0, goal = Goal.LOSE_FAT.name)
+        s = Actions.completeOnboarding(s, edited, today)
+        assertFalse(s.settings.editProfile)
+        assertEquals(Goal.LOSE_FAT.name, s.profile!!.goal)
+        assertEquals(1, s.weights.count { it.epochDay == today.toEpochDay() })
+        assertEquals(12, s.game.repsByExercise[ExerciseType.SQUAT.id])
+    }
+
+    @Test
+    fun cancelingAProfileEditChangesNothingElse() {
+        val s = Actions.startProfileEdit(started())
+        val back = Actions.cancelProfileEdit(s)
+        assertFalse(back.settings.editProfile)
+        assertEquals(started().profile, back.profile)
+    }
+
+    @Test
+    fun reportsExpireAndAreCapped() {
+        val here = app.gymquest.core.tracking.GeoPoint(19.43, -99.13)
+        var s = Actions.addReport(started(), "TRAFFIC", here, 0L)
+        assertEquals(1, s.reports.size)
+        // Traffic lasts 30 minutes: a new report two hours later drops the old one.
+        s = Actions.addReport(s, "POTHOLE", here, 2 * 3_600_000L)
+        assertEquals(listOf("POTHOLE"), s.reports.map { it.type })
+        repeat(250) { s = Actions.addReport(s, "POTHOLE", here, 2 * 3_600_000L + it) }
+        assertTrue(s.reports.size <= 200)
+    }
+
+    @Test
+    fun conqueredLoopsAreStoredWithTheActivity() {
+        val dto = ActivityDto("a1", 1_000L, "RUN", 3_000.0, 900_000, 950_000, 10.0, 8.0, 200, "abc", cellsCaptured = 12)
+        val loop = LoopDto("xyz", 25_000.0, 1_000L)
+        val r = Actions.finishActivity(started(), dto, app.gymquest.core.tracking.ActivityType.RUN, today, listOf(loop))
+        assertEquals(listOf(loop), r.state.loops)
+        assertEquals(12, r.state.game.territoryCells)
+        assertTrue(r.reward.xp > 0)
+        assertEquals(3.0, r.state.game.totalKm, 0.001)
+    }
 }
