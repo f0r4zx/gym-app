@@ -15,8 +15,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,6 +92,27 @@ fun CharacterScreen(state: AppState, c: Controller, onBack: () -> Unit) {
                 Pill("Nivel ${Derived.level(state)}")
             }
             Muted("Tu cuerpo cambia con tu peso real y con tus entrenamientos. Las estadísticas solo suben ejercitándote de verdad.", Modifier.align(Alignment.CenterHorizontally))
+        }
+
+        if (state.weights.size >= 2) {
+            SectionTitle("Tu evolución")
+            GqCard {
+                val shapes = remember(state.weights, values) {
+                    state.weights.sortedBy { it.epochDay }.map { w ->
+                        AvatarMorph.shape(profile.sex, profile.heightCm, w.kg, null, values)
+                    }
+                }
+                val frames = remember(shapes) { AvatarMorph.timeline(shapes, 40) }
+                var pos by rememberSaveable { mutableFloatStateOf(1f) }
+                val shown = frames[(pos * (frames.size - 1)).toInt().coerceIn(0, frames.size - 1)]
+                val dayIndex = (pos * (state.weights.size - 1)).toInt().coerceIn(0, state.weights.size - 1)
+                val entry = state.weights.sortedBy { it.epochDay }[dayIndex]
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    AvatarView(shown, look, Modifier.height(180.dp).fillMaxWidth())
+                }
+                Slider(value = pos, onValueChange = { pos = it })
+                Muted("${java.time.LocalDate.ofEpochDay(entry.epochDay)} · ${"%.1f".format(entry.kg)} kg · ${AvatarMorph.describe(shown)}")
+            }
         }
 
         SectionTitle("Estadísticas")

@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -68,7 +69,11 @@ internal fun SleepPanel(state: AppState, c: Controller) {
     if (last != null) {
         val score = SleepScore.score(last, need)
         val workouts = state.workouts.filter { it.timeMs >= last.endMs }.map { WorkoutLoad(it.timeMs, (it.durationMs / 60_000).toInt(), 5.0) }
-        val battery = BodyBattery.current(score, debt, last.endMs, nowMs, workouts)
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val lateMinutes = remember(last.endMs) {
+            app.gymquest.health.UsageProbe.dailyUsage(context, nowMs, ZoneId.systemDefault())?.let { app.gymquest.core.wellness.ScreenTimeAdvisor.lateMinutes(it) } ?: 0
+        }
+        val battery = BodyBattery.current(score, debt, last.endMs, nowMs, workouts, lateScreenMinutes = lateMinutes)
         GqCard {
             Text("🔋 Batería corporal: ${battery.level}%", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Bar(
