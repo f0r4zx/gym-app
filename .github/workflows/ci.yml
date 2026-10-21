@@ -87,9 +87,7 @@ jobs:
           echo "===== GRADLE TAIL ====="
           tail -45 emu.log | cut -c1-300
           echo "===== TEST FAILURES ====="
-          for f in $(find app/build -path '*androidTest-results*' -name '*.xml' 2>/dev/null); do
-            grep -A14 "<failure" "$f" | cut -c1-300 | head -40
-          done
+          find app/build -path '*androidTest-results*' -name '*.xml' -print0 2>/dev/null | xargs -0 -r grep -h -A14 "<failure" | cut -c1-300 | head -60
           echo "===== CRASH LOG ====="
           head -60 logcat.txt || true
 
